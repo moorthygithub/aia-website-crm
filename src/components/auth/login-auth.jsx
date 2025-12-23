@@ -1,6 +1,5 @@
-import React, { useContext, useEffect, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "@/api";
+import logoLogin from "@/assets/receipt/fts_log.png";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,23 +10,19 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, EffectFade } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/effect-fade";
-import "swiper/css/autoplay";
-import { motion } from "framer-motion";
-import Cookies from "js-cookie";
-import { Eye, EyeOff, LogIn } from "lucide-react";
-import BASE_URL from "@/config/base-url";
-import logoLogin from "@/assets/receipt/fts_log.png";
-import { toast } from "sonner";
-import { useApiMutation } from "@/hooks/use-mutation";
-import { login } from "@/constants/apiConstants";
-import { setCompanyDetails } from "@/store/auth/companySlice";
-import { useDispatch } from "react-redux";
 import { setCredentials } from "@/store/auth/authSlice";
-import api from "@/api";
+import { setCompanyDetails } from "@/store/auth/companySlice";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, LogIn } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import "swiper/css";
+import "swiper/css/autoplay";
+import "swiper/css/effect-fade";
+import { Autoplay, EffectFade } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 const sliderImages = [
   {

@@ -1,4 +1,4 @@
-import { panelcheck } from "@/constants/apiConstants";
+import { PANEL_CHECK } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { logout } from "@/store/auth/authSlice";
 import { setCompanyDetails, setCompanyImage } from "@/store/auth/companySlice";
@@ -44,7 +44,7 @@ const AppProvider = ({ children }) => {
         throw new Error("Missing environment variables");
       }
 
-      const panelRes = await trigger({ url: panelcheck.getPanelStatus });
+      const panelRes = await trigger({ url: PANEL_CHECK.getPanelStatus });
       if (panelRes?.message !== "Success") {
         throw new Error("Panel check failed");
       }
@@ -66,7 +66,7 @@ const AppProvider = ({ children }) => {
         );
       }
 
-      const envRes = await trigger({ url: panelcheck.getEnvStatus });
+      const envRes = await trigger({ url: PANEL_CHECK.getEnvStatus });
       const computedHash = CryptoJS.MD5(validationKey).toString();
 
       if (envRes?.data !== computedHash) {
@@ -85,7 +85,7 @@ const AppProvider = ({ children }) => {
 
   const pollPanelStatus = async () => {
     try {
-      const res = await trigger({ url: panelcheck.getPanelStatus });
+      const res = await trigger({ url: PANEL_CHECK.getPanelStatus });
       if (res?.message !== "Success") {
         throw new Error();
       }

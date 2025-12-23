@@ -32,6 +32,12 @@ const NAVIGATION_CONFIG = {
       icon: Frame,
       isActive: false,
     },
+    POPUPLIST: {
+      title: "PopUpList",
+      url: "/popup-list",
+      icon: Frame,
+      isActive: false,
+    },
   },
 
   MODULES: {
@@ -244,13 +250,21 @@ const NAVIGATION_CONFIG = {
 
 const USER_ROLE_PERMISSIONS = {
   1: {
-    navMain: ["DASHBOARD", "MEMBERSHIP", "DONOR", "RECEIPT", "SCHOOL"],
-    navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
+    navMain: [
+      "DASHBOARD",
+      "POPUPLIST",
+      "MEMBERSHIP",
+      "DONOR",
+      "RECEIPT",
+      "SCHOOL",
+    ],
+    navMainReport: ["SUMMARY", "POPUPLIST", "DOWNLOADS", "OTHER", "SETTINGS"],
   },
 
   2: {
     navMain: [
       "DASHBOARD",
+      "POPUPLIST",
       "CHAPTER",
       "MEMBERSHIP",
       "DONOR",
@@ -263,6 +277,7 @@ const USER_ROLE_PERMISSIONS = {
   3: {
     navMain: [
       "DASHBOARD",
+      "POPUPLIST",
       "MASTER_SETTINGS",
       "MEMBERSHIP",
       "DONOR",

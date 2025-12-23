@@ -9,6 +9,7 @@ import ForgotPassword from "@/components/forgot-password/forgot-password";
 import Home from "@/app/home/home";
 import ProtectedRoute from "./protected-route";
 import NotFound from "@/app/errors/not-found";
+import PopupList from "@/app/popup/popup";
 
 function AppRoutes() {
   return (
@@ -27,12 +28,19 @@ function AppRoutes() {
       </Route>
 
       <Route path="/" element={<ProtectedRoute />}>
-        {/* dashboard  */}
         <Route
           path="/home"
           element={
             <Suspense fallback={<LoadingBar />}>
               <Home />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/popup-list"
+          element={
+            <Suspense fallback={<LoadingBar />}>
+              <PopupList />
             </Suspense>
           }
         />
