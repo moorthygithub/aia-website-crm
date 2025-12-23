@@ -11,6 +11,8 @@ import ProtectedRoute from "./protected-route";
 import NotFound from "@/app/errors/not-found";
 import PopupList from "@/app/popup/popup";
 import ErrorBoundary from "@/components/error-boundry/error-boundry";
+import BannerList from "@/app/banner/banner-list";
+import CompanyList from "@/app/company/company-list";
 
 function AppRoutes() {
   return (
@@ -43,6 +45,22 @@ function AppRoutes() {
           element={
             <Suspense fallback={<LoadingBar />}>
               <PopupList />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/banner-list"
+          element={
+            <Suspense fallback={<LoadingBar />}>
+              <BannerList />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/company-list"
+          element={
+            <Suspense fallback={<LoadingBar />}>
+              <CompanyList />
             </Suspense>
           }
         />

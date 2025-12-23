@@ -38,6 +38,18 @@ const NAVIGATION_CONFIG = {
       icon: Frame,
       isActive: false,
     },
+    BANNERLIST: {
+      title: "Banner List",
+      url: "/banner-list",
+      icon: Frame,
+      isActive: false,
+    },
+    COMPANYLIST: {
+      title: "Company List",
+      url: "/company-list",
+      icon: Frame,
+      isActive: false,
+    },
   },
 
   MODULES: {
@@ -253,6 +265,8 @@ const USER_ROLE_PERMISSIONS = {
     navMain: [
       "DASHBOARD",
       "POPUPLIST",
+      "BANNERLIST",
+      "COMPANYLIST",
       "MEMBERSHIP",
       "DONOR",
       "RECEIPT",
