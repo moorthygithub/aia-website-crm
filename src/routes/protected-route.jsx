@@ -5,6 +5,7 @@ import { Navigate, Outlet } from "react-router-dom";
 
 const ProtectedRoute = () => {
   const { isAuthenticated, isLoading } = useAuth();
+
   if (isLoading) return <DashboardSkeleton />;
 
   return isAuthenticated ? (

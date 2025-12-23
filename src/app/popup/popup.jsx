@@ -1,19 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
-import apiClient from "@/api/apiClient";
+import ApiErrorPage from "@/components/api-error/api-error";
 import DataTable from "@/components/common/data-table";
+import ImageCell from "@/components/common/ImageCell";
+import LoadingBar from "@/components/loader/loading-bar";
 import { POPUP_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
-import ImageCell from "@/components/common/ImageCell";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 
 const PopupList = () => {
-  //   const { data, isLoading, isError } = useQuery({
-  //     queryKey: ["popups"],
-  //     queryFn: async () => {
-  //       const res = await apiClient.get(POPUP_API.list);
-  //       return res.data.data;
-  //     },
-  //   });
   const {
     data: data,
     isLoading,
@@ -61,25 +54,20 @@ const PopupList = () => {
       header: "Heading",
       accessorKey: "popup_heading",
     },
-    {
-      header: "Status",
-      accessorKey: "status",
-      cell: ({ row }) => (
-        <span className="capitalize">{row.original.status}</span>
-      ),
-    },
   ];
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading popups</div>;
-
   return (
-    <DataTable
-      data={data?.data || []}
-      columns={columns}
-      pageSize={10}
-      searchPlaceholder="Search popups..."
-    />
+    <>
+      {isLoading && <LoadingBar />}
+      {isError && <ApiErrorPage onRetry={refetch} />}
+
+      <DataTable
+        data={data?.data || []}
+        columns={columns}
+        pageSize={10}
+        searchPlaceholder="Search popups..."
+      />
+    </>
   );
 };
 

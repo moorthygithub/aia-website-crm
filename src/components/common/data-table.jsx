@@ -24,6 +24,7 @@ const DataTable = ({
   columns = [],
   pageSize = 10,
   searchPlaceholder = "Search...",
+  extraContent,
 }) => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [pagination, setPagination] = useState({
@@ -48,14 +49,20 @@ const DataTable = ({
 
   return (
     <div className="space-y-3">
-      <div className="relative w-64">
-        <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-        <Input
-          value={globalFilter ?? ""}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          placeholder={searchPlaceholder}
-          className="pl-8 h-9"
-        />
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 mb-2">
+        <div className="relative w-64">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+          <Input
+            value={globalFilter ?? ""}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="pl-8 h-9"
+          />
+        </div>
+
+        {extraContent && (
+          <div className="flex items-center gap-2">{extraContent}</div>
+        )}
       </div>
 
       <div className="rounded-none border min-h-[31rem] grid grid-cols-1">

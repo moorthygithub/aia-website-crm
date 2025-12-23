@@ -4,8 +4,8 @@ const ImageCell = ({
   src,
   fallback,
   alt = "image",
-  width = 50, 
-  height = 30, 
+  width = 40, 
+  height = 20, 
   className = "",
 }) => {
   const [imgSrc, setImgSrc] = useState(src || fallback);

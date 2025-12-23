@@ -6,7 +6,7 @@ const useAuth = () => {
 
   const token = useSelector((state) => state.auth?.token);
   const user = useSelector((state) => state.auth?.user);
-  console.log(Boolean(token), "token in auth ");
+
   useEffect(() => {
     setIsLoading(false);
   }, []);
