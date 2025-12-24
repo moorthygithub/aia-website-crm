@@ -1,260 +1,149 @@
-import SignUp from "@/app/auth/sign-up";
-import Maintenance from "@/components/common/maintenance";
-import LoadingBar from "@/components/loader/loading-bar";
-import { Suspense } from "react";
-import { Route, Routes } from "react-router-dom";
-import AuthRoute from "./auth-route";
-import Login from "@/app/auth/login";
-import ForgotPassword from "@/components/forgot-password/forgot-password";
-import Home from "@/app/home/home";
-import ProtectedRoute from "./protected-route";
-import NotFound from "@/app/errors/not-found";
-import PopupList from "@/app/popup/popup";
-import ErrorBoundary from "@/components/error-boundry/error-boundry";
-import BannerList from "@/app/banner/banner-list";
-import CompanyList from "@/app/company/company-list";
-import CountryList from "@/app/country/country";
-import LetureYoutubeList from "@/app/lecture-youtube/lecture-youtube-list";
-import LectureYoutubeForm from "@/app/lecture-youtube/lecture-youtube-form";
-import StudentList from "@/app/student/student-list";
-import StudentForm from "@/app/student/student-form";
-import CreateBanner from "@/app/banner/create-banner";
-import CreateCompany from "@/app/company/create-company";
-import EditCompany from "@/app/company/edit-company";
-import EditBanner from "@/app/banner/edit-banner";
-import FaqList from "@/app/faq/faq-list";
-import CreateFaq from "@/app/faq/create-faq";
-import EditFaq from "@/app/faq/edit-faq";
-import Settings from "@/app/setting/setting";
-import BlogList from "@/app/blog/blog-list";
-import CreateBlog from "@/app/blog/create-blog";
+import React from "react";
+import {
+  User,
+  BookOpen,
+  Building2,
+  Mail,
+  Settings,
+  Users,
+  Code,
+} from "lucide-react";
 
-function AppRoutes() {
+const headerIcons = {
+  user: User,
+  student: BookOpen,
+  company: Building2,
+  email: Mail,
+  settings: Settings,
+  team: Users,
+  project: Code,
+};
+
+const PageHeader = ({
+  icon = "user",
+  title = "Page Title",
+  description = "Add a description here",
+  bgColor = "from-blue-50 to-blue-100",
+  iconBgColor = "bg-blue-100",
+  iconColor = "text-blue-600",
+}) => {
+  const IconComponent = headerIcons[icon] || User;
+
   return (
-    <ErrorBoundary>
-      <Routes>
-        <Route path="/" element={<AuthRoute />}>
-          <Route path="/" element={<Login />} />
-          <Route
-            path="/forgot-password"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <ForgotPassword />
-              </Suspense>
-            }
-          />
-          <Route path="/maintenance" element={<Maintenance />} />
-        </Route>
+    <div
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${bgColor} p-8 mb-8 border border-white/50 shadow-sm`}
+    >
+      {/* Decorative Elements */}
+      <div className="absolute top-0 right-0 w-40 h-40 bg-white/30 rounded-full blur-3xl -mr-20 -mt-20"></div>
+      <div className="absolute bottom-0 left-1/2 w-60 h-60 bg-white/20 rounded-full blur-3xl -ml-30 -mb-20"></div>
 
-        <Route path="/" element={<ProtectedRoute />}>
-          <Route
-            path="/home"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <Home />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/popup-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <PopupList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/banner-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <BannerList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/company-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <CompanyList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/country-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <CountryList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/lecture-youtube"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <LetureYoutubeList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/lecture-youtube/create"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <LectureYoutubeForm />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/lecture-youtube/:id/edit"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <LectureYoutubeForm />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/student-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <StudentList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/student/create"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <StudentForm />
-              </Suspense>
-            }
-          />
-          {/* <Route
-            path="/student/:id/edit"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <StudentForm />
-              </Suspense>
-            }
-          /> */}
-        </Route>
-      <Route path="/" element={<ProtectedRoute />}>
-        <Route
-          path="/home"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <Home />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/popup-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <PopupList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/banner-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <BannerList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-banner"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateBanner />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/edit-banner/:id"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <EditBanner />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/company-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CompanyList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-company"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateCompany />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/edit-company/:id"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <EditCompany />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/faq-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <FaqList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-faq"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateFaq />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/edit-faq/:id"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <EditFaq />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <Settings />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/blog-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <BlogList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-blog"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateBlog />
-            </Suspense>
-          }
-        />
-      </Route>
+      {/* Content */}
+      <div className="relative z-10 flex items-start gap-4">
+        {/* Icon Container */}
+        <div
+          className={`p-3.5 rounded-xl ${iconBgColor} flex-shrink-0 shadow-sm`}
+        >
+          <IconComponent className={`w-6 h-6 ${iconColor}`} />
+        </div>
 
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </ErrorBoundary>
+        {/* Text Content */}
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {description}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
   );
-}
+};
 
-export default AppRoutes;
+// Demo Component
+const Demo = () => {
+  const examples = [
+    {
+      icon: "company",
+      title: "Add New Company",
+      description: "Fill in the details below to create a new company profile",
+      bgColor: "from-blue-50 to-blue-100",
+      iconBgColor: "bg-blue-100",
+      iconColor: "text-blue-600",
+    },
+    {
+      icon: "student",
+      title: "Add New Student",
+      description:
+        "Fill in the student details below to register them in the system",
+      bgColor: "from-emerald-50 to-emerald-100",
+      iconBgColor: "bg-emerald-100",
+      iconColor: "text-emerald-600",
+    },
+    {
+      icon: "email",
+      title: "Contact Support",
+      description: "Get in touch with our support team for assistance",
+      bgColor: "from-purple-50 to-purple-100",
+      iconBgColor: "bg-purple-100",
+      iconColor: "text-purple-600",
+    },
+    {
+      icon: "team",
+      title: "Manage Team Members",
+      description: "Add, edit, or remove team members from your organization",
+      bgColor: "from-orange-50 to-orange-100",
+      iconBgColor: "bg-orange-100",
+      iconColor: "text-orange-600",
+    },
+    {
+      icon: "settings",
+      title: "Settings",
+      description: "Configure your preferences and account settings",
+      bgColor: "from-pink-50 to-pink-100",
+      iconBgColor: "bg-pink-100",
+      iconColor: "text-pink-600",
+    },
+    {
+      icon: "project",
+      title: "Create New Project",
+      description: "Start a new project and begin collaborating with your team",
+      bgColor: "from-indigo-50 to-indigo-100",
+      iconBgColor: "bg-indigo-100",
+      iconColor: "text-indigo-600",
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-white p-6">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-10">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Page Header Component
+          </h2>
+          <p className="text-gray-600">
+            Clean and elegant header component with multiple color variants
+          </p>
+        </div>
+
+        <div className="space-y-6">
+          {examples.map((example, index) => (
+            <PageHeader
+              key={index}
+              icon={example.icon}
+              title={example.title}
+              description={example.description}
+              bgColor={example.bgColor}
+              iconBgColor={example.iconBgColor}
+              iconColor={example.iconColor}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Demo;

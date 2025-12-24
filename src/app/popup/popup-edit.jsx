@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from "react";
+import ImageUpload from "@/components/image-upload/image-upload";
+import LoadingBar from "@/components/loader/loading-bar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -15,22 +15,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, X } from "lucide-react";
-import { useApiMutation } from "@/hooks/use-mutation";
+import { Textarea } from "@/components/ui/textarea";
 import { POPUP_API } from "@/constants/apiConstants";
-import LoadingBar from "@/components/loader/loading-bar";
+import { useApiMutation } from "@/hooks/use-mutation";
+import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
+const IMAGE_FOR = "Popup";
 const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
   const [data, setData] = useState({
     heading: "",
     alt: "",
     required: "Yes",
-    image: "",
-    file: null,
+    popup_image: null,
   });
-  const [preview, setPreview] = useState("");
+
+  const [preview, setPreview] = useState({
+    popup_image: "",
+  });
   const [errors, setErrors] = useState({});
+  const resetState = () => {
+    setErrors({});
+    setPreview({ popup_image: "" });
+    setData({
+      heading: "",
+      alt: "",
+      required: "Yes",
+      popup_image: null,
+    });
+  };
 
   const { trigger: fetchPopup, loading } = useApiMutation();
   const { trigger: SubmitPopup, loading: submitloading } = useApiMutation();
@@ -41,78 +54,42 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
     const fetchData = async () => {
       try {
         const res = await fetchPopup({ url: POPUP_API.byId(popupId) });
-
         const popup = res.data;
-        const popupBaseUrl = res.image_url?.find(
-          (i) => i.image_for === "Popup"
-        )?.image_url;
-        const noImageUrl = res.image_url?.find(
-          (i) => i.image_for === "No Image"
-        )?.image_url;
+        const imageBaseUrl = getImageBaseUrl(res?.image_url, IMAGE_FOR);
 
+        const noImageUrl = getNoImageUrl(res?.image_url);
         setData({
           heading: popup?.popup_heading || "",
           alt: popup?.popup_image_alt || "",
           required: popup?.popup_required || "Yes",
-          image: popup?.popup_image
-            ? `${popupBaseUrl}${popup.popup_image}`
-            : noImageUrl,
-          file: null,
+          popup_image: null,
         });
-        setPreview(
-          popup?.popup_image
-            ? `${popupBaseUrl}${popup.popup_image}`
-            : noImageUrl
-        );
+        const imagepath = res?.data?.popup_image
+          ? `${imageBaseUrl}${res?.data?.popup_image}`
+          : noImageUrl;
+        setPreview({
+          popup_image: imagepath,
+        });
       } catch (err) {
-        console.error("Failed to fetch popup data:", err);
-        setData({
-          heading: "",
-          alt: "",
-          required: "Yes",
-          image: noImageUrl,
-          file: null,
-        });
-        setPreview(noImageUrl);
+        toast.error(err.message || "Failed to load data");
       }
     };
 
     fetchData();
   }, [isOpen, popupId]);
 
-  useEffect(() => {
-    if (data.file) {
-      const url = URL.createObjectURL(data.file);
-      setPreview(url);
-      return () => URL.revokeObjectURL(url);
-    }
-    setPreview(data.image);
-  }, [data.file, data.image]);
-
-  const handleFileSelect = (file) => {
-    if (file?.type.startsWith("image/")) {
-      setData({ ...data, file });
-      setErrors({ ...errors, image: "" });
-    }
-  };
-
-  const handleRemove = () => {
-    setData({ ...data, image: "", file: null });
-    setPreview("");
-  };
-
   const validate = () => {
     const newErrors = {};
     if (!data.heading.trim()) newErrors.heading = "Required";
     if (!data.alt.trim()) newErrors.alt = "Required";
-    if (!preview) newErrors.image = "Required";
+    if (!preview.popup_image && !data.popup_image)
+      newErrors.popup_image = "Image is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSave = async () => {
     if (!validate()) {
-      toast.error("Please fix validation errors");
       return;
     }
 
@@ -123,12 +100,12 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
       formData.append("popup_image_alt", data.alt);
       formData.append("popup_required", data.required);
 
-      if (data.file instanceof File) {
-        formData.append("popup_image", data.file);
+      if (data.popup_image instanceof File) {
+        formData.append("popup_image", data.popup_image);
       }
 
       const res = await SubmitPopup({
-        url: `${POPUP_API.byId(popupId)}?_method=PUT`,
+        url: `${POPUP_API.updateById(popupId)}`,
         method: "post",
         data: formData,
         headers: {
@@ -147,10 +124,31 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
       toast.error(err?.message || "Something went wrong. Please try again.");
     }
   };
+  const handleImageChange = (fieldName, file) => {
+    if (file) {
+      setData({ ...data, [fieldName]: file });
+      const url = URL.createObjectURL(file);
+      setPreview({ ...preview, [fieldName]: url });
+      setErrors({ ...errors, [fieldName]: "" });
+    }
+  };
+
+  const handleRemoveImage = (fieldName) => {
+    setData({ ...data, [fieldName]: null });
+    setPreview({ ...preview, [fieldName]: "" });
+  };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          resetState();
+          onClose();
+        }
+      }}
+    >
+      <DialogContent className="max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Edit Popup</DialogTitle>
         </DialogHeader>
@@ -158,37 +156,23 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
         {loading && <LoadingBar />}
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Image</label>
-            {preview ? (
-              <div className="relative mt-2 rounded border overflow-hidden bg-gray-50">
-                <img
-                  src={preview}
-                  alt="preview"
-                  className="w-full h-40 object-cover"
-                  object-fit="cover"
-                />
-                <button
-                  onClick={handleRemove}
-                  className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded hover:bg-red-600"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ) : (
-              <label className="block mt-2 p-6 border-2 border-dashed border-gray-300 rounded text-center cursor-pointer hover:border-gray-400 hover:bg-gray-50">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => handleFileSelect(e.target.files?.[0])}
-                />
-                <Upload className="w-6 h-6 mx-auto text-gray-400 mb-1" />
-                <p className="text-sm text-gray-600">Drag or click to upload</p>
-              </label>
-            )}
-            {errors.image && (
-              <p className="text-red-500 text-xs mt-1">{errors.image}</p>
-            )}
+            <ImageUpload
+              id="popup_image"
+              label="YouTube Image"
+              required
+              selectedFile={data.popup_image}
+              previewImage={preview.popup_image}
+              onFileChange={(e) =>
+                handleImageChange("popup_image", e.target.files?.[0])
+              }
+              onRemove={() => handleRemoveImage("popup_image")}
+              error={errors.popup_image}
+              format="WEBP"
+              allowedExtensions={["webp"]}
+              dimensions="600x350"
+              maxSize={5}
+              requiredDimensions={[600, 350]}
+            />
           </div>
 
           <div>
@@ -217,7 +201,6 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
             )}
           </div>
 
-          {/* Required */}
           <div>
             <label className="text-sm font-medium">Required *</label>
             <Select

@@ -41,12 +41,14 @@ const CountryList = () => {
 
         return (
           <span
-            className={`px-3 py-1 text-sm  rounded-full inline-block
-          ${
-            isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-          }`}
+            className={`px-3 py-1 text-xs font-medium rounded-full inline-block
+              ${
+                isActive
+                  ? "bg-green-100 text-green-700"
+                  : "bg-red-100 text-red-700"
+              }`}
           >
-            {isActive ? "Active" : "Inactive"}
+            {status}
           </span>
         );
       },

@@ -28,6 +28,7 @@ import EditFaq from "@/app/faq/edit-faq";
 import Settings from "@/app/setting/setting";
 import BlogList from "@/app/blog/blog-list";
 import CreateBlog from "@/app/blog/create-blog";
+import NewsLetter from "@/app/newsletter/news-letter";
 
 function AppRoutes() {
   return (
@@ -48,34 +49,10 @@ function AppRoutes() {
 
         <Route path="/" element={<ProtectedRoute />}>
           <Route
-            path="/home"
+            path="/new-letter-list"
             element={
               <Suspense fallback={<LoadingBar />}>
-                <Home />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/popup-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <PopupList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/banner-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <BannerList />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/company-list"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <CompanyList />
+                <NewsLetter />
               </Suspense>
             }
           />
@@ -127,129 +104,127 @@ function AppRoutes() {
               </Suspense>
             }
           />
-          {/* <Route
+          <Route
             path="/student/:id/edit"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <StudentForm />
               </Suspense>
             }
-          /> */}
+          />
+          <Route
+            path="/home"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <Home />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/popup-list"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <PopupList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/banner-list"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <BannerList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/add-banner"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <CreateBanner />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/edit-banner/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <EditBanner />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/company-list"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <CompanyList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/add-company"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <CreateCompany />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/edit-company/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <EditCompany />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/faq-list"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <FaqList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/add-faq"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <CreateFaq />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/edit-faq/:id"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <EditFaq />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <Settings />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/blog-list"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <BlogList />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/add-blog"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <CreateBlog />
+              </Suspense>
+            }
+          />
         </Route>
-      <Route path="/" element={<ProtectedRoute />}>
-        <Route
-          path="/home"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <Home />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/popup-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <PopupList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/banner-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <BannerList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-banner"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateBanner />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/edit-banner/:id"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <EditBanner />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/company-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CompanyList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-company"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateCompany />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/edit-company/:id"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <EditCompany />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/faq-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <FaqList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-faq"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateFaq />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/edit-faq/:id"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <EditFaq />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/settings"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <Settings />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/blog-list"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <BlogList />
-            </Suspense>
-          }
-        />
-        <Route
-          path="/add-blog"
-          element={
-            <Suspense fallback={<LoadingBar />}>
-              <CreateBlog />
-            </Suspense>
-          }
-        />
-      </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>

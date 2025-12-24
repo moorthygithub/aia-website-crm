@@ -56,6 +56,12 @@ const NAVIGATION_CONFIG = {
       icon: Frame,
       isActive: false,
     },
+    NEWSLETTERLIST: {
+      title: "NewsLetter List",
+      url: "/new-letter-list",
+      icon: Frame,
+      isActive: false,
+    },
     LETUREYOUTUBELIST: {
       title: "Leture Youtube",
       url: "/lecture-youtube",
@@ -301,6 +307,7 @@ const USER_ROLE_PERMISSIONS = {
       "COUNTRYLIST",
       "LETUREYOUTUBELIST",
       "STUDENTLIST",
+      "NEWSLETTERLIST",
       "MEMBERSHIP",
       "DONOR",
       "RECEIPT",
@@ -314,6 +321,7 @@ const USER_ROLE_PERMISSIONS = {
       "DOWNLOADS",
       "COUNTRYLIST",
       "LETUREYOUTUBELIST",
+      "NEWSLETTERLIST",
       "STUDENTLIST",
       "OTHER",
       "SETTINGS",

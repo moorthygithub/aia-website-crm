@@ -57,11 +57,13 @@ const CompanyList = () => {
       header: "Status",
       accessorKey: "student_company_status",
       cell: ({ row }) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          row.original.student_company_status === "Active" 
-            ? "bg-green-100 text-green-800" 
-            : "bg-red-100 text-red-800"
-        }`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            row.original.student_company_status === "Active"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
           {row.original.student_company_status}
         </span>
       ),
@@ -70,11 +72,14 @@ const CompanyList = () => {
       header: "Actions",
       accessorKey: "actions",
       cell: ({ row }) => (
-        <div >
-           <Link title="company edit" to={`/edit-company/${row.original.id}`} className="cursor-pointer">
-                <Edit className=" h-4 w-4 hover:text-blue-600" />
-           
-              </Link>
+        <div>
+          <Link
+            title="company edit"
+            to={`/edit-company/${row.original.id}`}
+            className="cursor-pointer"
+          >
+            <Edit className=" h-4 w-4 hover:text-blue-600" />
+          </Link>
         </div>
       ),
     },
@@ -83,19 +88,16 @@ const CompanyList = () => {
   if (isError) return <ApiErrorPage onRetry={refetch} />;
   return (
     <>
-    
-
       <DataTable
         data={data?.data || []}
         columns={columns}
         pageSize={10}
         searchPlaceholder="Search companies..."
         addButton={{
-          to: '/add-company', 
-          label: 'Add Company' 
+          to: "/add-company",
+          label: "Add Company",
         }}
       />
-   
     </>
   );
 };
