@@ -1,183 +1,53 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Cookies from "js-cookie";
-import apiClient from "@/api/apiClient";
+import { useTheme } from "@/lib/theme-context";
 
 
 const Settings = () => {
-  const queryClient = useQueryClient();
-  const token = Cookies.get("token");
-  const fileInputRef = useRef(null);
 
-  const { data: profileData, isLoading } = useQuery({
-    queryKey: ["profile"],
-    queryFn: async () => {
-      const response = await apiClient.get("/api/fetch-profile");
-      return response.data;
-    },
-    staleTime: 30 * 60 * 1000,
-    cacheTime: 60 * 60 * 1000,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-  });
-
-  const user = profileData?.data;
-  const imageUrls = profileData?.image_url;
-
-  const [editProfile, setEditProfile] = useState({
-    first_name: "",
-    phone: "",
-    email: "",
-    image: null,
-  });
-
-  const [passwordData, setPasswordData] = useState({
-    oldPassword: "",
-    newPassword: "",
-    confirmPassword: "",
-  });
-
-  useEffect(() => {
-    if (user) {
-      setEditProfile({
-        first_name: user.first_name || "",
-        phone: user.phone || "",
-        email: user.email || "",
-        image: null,
-      });
-    }
-  }, [user]);
-
-  const getUserImageUrl = () => {
-    const datenow = new Date().getTime();
-    if (!user?.image) {
-      const noImageUrl =
-        imageUrls?.find((img) => img.image_for === "No Image")?.image_url || "";
-      return noImageUrl;
-    }
-    const userImageUrl = `${
-      imageUrls?.find((img) => img.image_for === "User")?.image_url
-    }${user.image}`;
-    return `${userImageUrl}?t=${datenow}`;
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setEditProfile((prev) => ({ ...prev, image: file }));
-    }
-  };
-
-  const updateProfileMutation = useMutation({
-    mutationFn: async (formData) => {
-      const response = await apiClient.post(
-        "/api/update-profile",
-        formData,
-        {}
-      );
-      return response.data;
-    },
-    onSuccess: (data) => {
-      toast.success(data.message || "Profile updated successfully!");
-      queryClient.invalidateQueries(["profile"]);
-    },
-    onError: (error) => {
-      toast.error(error.response.data.message || "Failed to update profile");
-      console.error("Update profile error:", error);
-    },
-  });
-
-  const handleProfileUpdate = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("first_name", editProfile.first_name);
-    formData.append("phone", editProfile.phone);
-    formData.append("email", editProfile.email);
-    if (editProfile.image) {
-      formData.append("image", editProfile.image);
-    }
-    updateProfileMutation.mutate(formData);
-  };
-
-  const changePasswordMutation = useMutation({
-    mutationFn: async (passwordData) => {
-      const response = await apiClient.post("/api/panel-change-password", {
-        old_password: passwordData.oldPassword,
-        password: passwordData.newPassword,
-        new_password: passwordData.confirmPassword,
-        username: user?.name,
-      });
-      return response.data;
-    },
-    onSuccess: (data) => {
-      if (data.code === 201) {
-        const token = data.token;
-
-        const expiryDate = new Date(data?.token_expires_at.replace(" ", "T"));
-
-        Cookies.set("token", token, {
-          expires: expiryDate,
-          sameSite: "strict",
-          secure: true,
-        });
-        toast.success(data.message || "Password updated successfully!");
-        setPasswordData({
-          oldPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
-      } else {
-        toast.error(data.message || "Unexpected error occurred");
-      }
-    },
-    onError: (error) => {
-      toast.error(
-        error.response.data.message || "Please enter valid old password"
-      );
-    },
-  });
-
-  const handlePasswordChange = (e) => {
-    e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("Passwords don't match");
-      return;
-    }
-    if (passwordData.oldPassword === passwordData.newPassword) {
-      toast.error("Same Old Password is not allowed");
-      return;
-    }
-    changePasswordMutation.mutate(passwordData);
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center p-8">Loading...</div>
-    );
-  }
+    const { theme, setTheme } = useTheme();
 
   return (
     <div className="p-2 max-w-6xl mx-auto ">
   
-          {/* <ProfileSetting
-            user={user}
-            editProfile={editProfile}
-            setEditProfile={setEditProfile}
-            handleProfileUpdate={handleProfileUpdate}
-            passwordData={passwordData}
-            setPasswordData={setPasswordData}
-            handlePasswordChange={handlePasswordChange}
-            updateProfileMutation={updateProfileMutation}
-            changePasswordMutation={changePasswordMutation}
-            fileInputRef={fileInputRef}
-            handleImageChange={handleImageChange}
-            getUserImageUrl={getUserImageUrl}
-          /> */}
+       
         
-      
+        <div className="">
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Theme Color</p>
+            <div className="flex gap-2 flex-wrap">
+              {["default", "yellow", "green", "purple", "teal", "gray"].map((color) => {
+                const colorsMap = {
+                  default: "bg-blue-600",
+                  yellow: "bg-yellow-500",
+                  green: "bg-green-600",
+                  purple: "bg-purple-600",
+                  teal: "bg-teal-600",
+                  gray: "bg-gray-600",
+                };
+                const isActive = theme === color;
+                return (
+                  <button
+                    key={color}
+                    onClick={() => setTheme(color)}
+                    className={`w-6 h-6 rounded-md flex items-center justify-center transition-all duration-200
+                      ${colorsMap[color]} 
+                      ${isActive ? "shadow-md ring-1 ring-offset-1 ring-blue-400 scale-110" : "opacity-80 hover:opacity-100"}`}
+                  >
+                    {isActive && (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
     </div>
   );
 };

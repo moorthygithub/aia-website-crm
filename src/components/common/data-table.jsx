@@ -160,6 +160,12 @@ const DataTable = ({
         </Table>
       </div>
 
+
+
+      <div className="flex items-center justify-between gap-2">
+      <div className="flex-1 text-sm text-muted-foreground">
+          Total Records: {table.getFilteredRowModel().rows.length}
+        </div>
       <div className="flex items-center justify-end gap-2">
         <Button
           size="sm"
@@ -184,6 +190,7 @@ const DataTable = ({
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
+    </div>
     </div>
   );
 };

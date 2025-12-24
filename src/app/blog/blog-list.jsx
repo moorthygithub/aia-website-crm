@@ -1,23 +1,25 @@
+
+
 import DataTable from "@/components/common/data-table";
 import ImageCell from "@/components/common/ImageCell";
 import LoadingBar from "@/components/loader/loading-bar";
 import ApiErrorPage from "@/components/api-error/api-error";
-import { COMPANY_API } from "@/constants/apiConstants";
+import { BLOG_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 import { Edit } from "lucide-react";
 
 import { Link } from "react-router-dom";
 
-const CompanyList = () => {
+const BlogList = () => {
   const {
     data: data,
     isLoading,
     isError,
     refetch,
   } = useGetApiMutation({
-    url: COMPANY_API.list,
-    queryKey: ["company-list"],
+    url: BLOG_API.list,
+    queryKey: ["blog-list"],
   });
 
   const IMAGE_FOR = "Student Company";
@@ -84,20 +86,19 @@ const CompanyList = () => {
   return (
     <>
     
-
       <DataTable
         data={data?.data || []}
         columns={columns}
         pageSize={10}
-        searchPlaceholder="Search companies..."
+        searchPlaceholder="Search blogs..."
         addButton={{
-          to: '/add-company', 
-          label: 'Add Company' 
+          to: '/add-blog', 
+          label: 'Add Blog' 
         }}
       />
-   
+  
     </>
   );
 };
 
-export default CompanyList;
+export default BlogList;

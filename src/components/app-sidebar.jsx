@@ -39,14 +39,26 @@ const NAVIGATION_CONFIG = {
       isActive: false,
     },
     BANNERLIST: {
-      title: "Banner List",
+      title: "Banner",
       url: "/banner-list",
       icon: Frame,
       isActive: false,
     },
     COMPANYLIST: {
-      title: "Company List",
+      title: "Company",
       url: "/company-list",
+      icon: Frame,
+      isActive: false,
+    },
+    FAQLIST: {
+      title: "FAQ",
+      url: "/faq-list",
+      icon: Frame,
+      isActive: false,
+    },
+    BLOGLIST: {
+      title: "Blog",
+      url: "/blog-list",
       icon: Frame,
       isActive: false,
     },
@@ -267,12 +279,11 @@ const USER_ROLE_PERMISSIONS = {
       "POPUPLIST",
       "BANNERLIST",
       "COMPANYLIST",
-      "MEMBERSHIP",
-      "DONOR",
-      "RECEIPT",
-      "SCHOOL",
+      "FAQLIST",
+      "BLOGLIST",
+     
     ],
-    navMainReport: ["SUMMARY", "POPUPLIST", "DOWNLOADS", "OTHER", "SETTINGS"],
+    navMainReport: [],
   },
 
   2: {

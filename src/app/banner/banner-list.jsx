@@ -1,64 +1,111 @@
-
 import DataTable from "@/components/common/data-table";
+import ImageCell from "@/components/common/ImageCell";
+import LoadingBar from "@/components/loader/loading-bar";
+import ApiErrorPage from "@/components/api-error/api-error";
 import { BANNER_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
+import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
+import { Edit, MoreVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Link } from "react-router-dom";
 
 const BannerList = () => {
- 
   const {
     data: data,
     isLoading,
     isError,
     refetch,
   } = useGetApiMutation({
-    url:    BANNER_API.list,
+    url: BANNER_API.list,
     queryKey: ["banner-list"],
   });
 
+  const IMAGE_FOR = "Banner";
+  const bannerBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
+  const noImageUrl = getNoImageUrl(data?.image_url);
+
   const columns = [
+    {
+      header: "Image",
+      accessorKey: "banner_image",
+      cell: ({ row }) => {
+        const fileName = row.original.banner_image;
+        const src = fileName ? `${bannerBaseUrl}${fileName}` : noImageUrl;
+
+        return (
+          <ImageCell
+            src={src}
+            fallback={noImageUrl}
+            alt={`${IMAGE_FOR} Image`}
+          />
+        );
+      },
+    },
     {
       header: "ID",
       accessorKey: "id",
     },
     {
-      header: "Page One Name",
-      accessorKey: "page_one_name",
+      header: "Sort Order",
+      accessorKey: "banner_sort",
     },
     {
-      header: "Popup Image",
-      accessorKey: "popup_image",
+      header: "Banner Text",
+      accessorKey: "banner_text",
     },
     {
-      header: "Popup Image",
-      accessorKey: "popup_required",
-    },
-    {
-      header: "Popup Heading",
-      accessorKey: "popup_heading",
+      header: "Alt Text",
+      accessorKey: "banner_image_alt",
     },
     {
       header: "Status",
-      accessorKey: "status",
+      accessorKey: "banner_status",
       cell: ({ row }) => (
-        <span className="capitalize">{row.original.status}</span>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+          row.original.banner_status === "Active" 
+            ? "bg-green-100 text-green-800" 
+            : "bg-red-100 text-red-800"
+        }`}>
+          {row.original.banner_status}
+        </span>
+      ),
+    },
+    {
+      header: "Actions",
+      accessorKey: "actions",
+      cell: ({ row }) => (
+        <div >
+            <Link title="banner edit" to={`/edit-banner/${row.original.id}`} className="cursor-pointer">
+                         <Edit className=" h-4 w-4 hover:text-blue-600" />
+                    
+                       </Link>
+        </div>
       ),
     },
   ];
-
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading banner</div>;
-
+  if (isLoading) return <LoadingBar />;
+  if (isError) return <ApiErrorPage onRetry={refetch} />;
   return (
-    <DataTable
-      data={data?.data || []}
-      columns={columns}
-      pageSize={10}
-      searchPlaceholder="Search banner..."
-      addButton={{
-        to: '/add-banner', 
-        label: 'Banner' 
-      }}
-    />
+    <>
+    
+      <DataTable
+        data={data?.data || []}
+        columns={columns}
+        pageSize={10}
+        searchPlaceholder="Search banners..."
+        addButton={{
+          to: '/add-banner', 
+          label: 'Add Banner' 
+        }}
+      />
+    
+    </>
   );
 };
 
