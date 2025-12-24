@@ -5,17 +5,17 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { useState } from "react";
+
 import { useNavigate } from "react-router-dom";
-import ChangePassword from "../auth/change-password";
+
 
 
 import { Breadcrumbs } from "@/components/new/breadcrumbs";
-import Cookies from "js-cookie";
+
 
 export default function Page({ children }) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
+
 
 
   const handleBackClick = (e) => {
@@ -24,7 +24,7 @@ export default function Page({ children }) {
   };
   return (
     <SidebarProvider>
-      {/* Desktop/Tablet Layout - Show sidebar normally */}
+ 
       <div className="hidden md:block">
         <AppSidebar />
       </div>
@@ -55,7 +55,7 @@ export default function Page({ children }) {
           </div>
         </footer>
 
-        <ChangePassword setOpen={setOpen} open={open} />
+       
       </SidebarInset>
     </SidebarProvider>
   );
