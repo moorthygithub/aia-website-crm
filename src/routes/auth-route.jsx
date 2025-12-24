@@ -16,7 +16,7 @@ const AuthRoute = () => {
     return <Outlet />;
   }
 
-  return <Navigate to="/popup-list" replace />;
+  return <Navigate to="/company-list" replace />;
 };
 
 export default AuthRoute;

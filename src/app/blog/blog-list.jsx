@@ -86,10 +86,7 @@ const BlogList = () => {
         );
       },
     },
-    {
-      header: "ID",
-      accessorKey: "id",
-    },
+
     {
       header: "Blog Slug",
       accessorKey: "blog_slug",

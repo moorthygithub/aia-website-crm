@@ -1,5 +1,4 @@
 import api from "@/api";
-import logoLogin from "@/assets/receipt/fts_log.png";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -123,7 +122,7 @@ export default function LoginAuth() {
         );
         dispatch(setCompanyDetails(res.company_details));
 
-        navigate("/popup-list", { replace: true });
+        navigate("/company-list", { replace: true });
       } else {
         toast.error(res.message || "Login Failed: Unexpected response.");
         setIsLoading(false);
@@ -194,13 +193,13 @@ export default function LoginAuth() {
           >
             <Card className="border-none shadow-none bg-transparent">
               <CardHeader className="pb-4 md:pb-6 flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-                <div className="flex-shrink-0">
+                {/* <div className="flex-shrink-0">
                   <img
-                    src={logoLogin}
-                    className="w-auto h-16 md:h-20"
+                    src="https://aia.in.net/crm/public/assets/images/logo/new_logo.webp"
+                    className="w-20 h-16 md:h-20"
                     alt="AIA Logo"
                   />
-                </div>
+                </div> */}
                 <div className="space-y-1 md:space-y-2">
                   <CardTitle className="text-lg md:text-xl font-bold bg-gradient-to-r from-[var(--team-color)] to-[var(--color-dark)] bg-clip-text text-transparent">
                     Welcome Back
@@ -314,7 +313,7 @@ export default function LoginAuth() {
                   </div>
                 </form>
               </CardContent>
-              <motion.div
+              {/* <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
@@ -332,7 +331,7 @@ export default function LoginAuth() {
                 >
                   Forgot your password?
                 </button>
-              </motion.div>
+              </motion.div> */}
             </Card>
           </motion.div>
         </div>

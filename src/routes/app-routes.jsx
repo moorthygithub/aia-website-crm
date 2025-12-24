@@ -36,26 +36,26 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<AuthRoute />}>
           <Route path="/" element={<Login />} />
-          <Route
+          {/* <Route
             path="/forgot-password"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <ForgotPassword />
               </Suspense>
             }
-          />
+          /> */}
           <Route path="/maintenance" element={<Maintenance />} />
         </Route>
 
         <Route path="/" element={<ProtectedRoute />}>
-          <Route
+          {/* <Route
             path="/newsletter-list"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <NewsLetter />
               </Suspense>
             }
-          />
+          /> */}
           <Route
             path="/country-list"
             element={
@@ -64,7 +64,7 @@ function AppRoutes() {
               </Suspense>
             }
           />
-          <Route
+          {/* <Route
             path="/lecture-youtube"
             element={
               <Suspense fallback={<LoadingBar />}>
@@ -87,7 +87,7 @@ function AppRoutes() {
                 <LectureYoutubeForm />
               </Suspense>
             }
-          />
+          /> */}
           <Route
             path="/student-list"
             element={
@@ -113,15 +113,15 @@ function AppRoutes() {
             }
           />
 
-          <Route
+          {/* <Route
             path="/popup-list"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <PopupList />
               </Suspense>
             }
-          />
-          <Route
+          /> */}
+          {/* <Route
             path="/banner-list"
             element={
               <Suspense fallback={<LoadingBar />}>
@@ -144,7 +144,7 @@ function AppRoutes() {
                 <EditBanner />
               </Suspense>
             }
-          />
+          /> */}
           <Route
             path="/company-list"
             element={
@@ -169,7 +169,7 @@ function AppRoutes() {
               </Suspense>
             }
           />
-          <Route
+          {/* <Route
             path="/faq-list"
             element={
               <Suspense fallback={<LoadingBar />}>
@@ -192,15 +192,15 @@ function AppRoutes() {
                 <EditFaq />
               </Suspense>
             }
-          />
-          <Route
+          /> */}
+          {/* <Route
             path="/settings"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <Settings />
               </Suspense>
             }
-          />
+          /> */}
           <Route
             path="/blog-list"
             element={
