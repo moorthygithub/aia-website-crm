@@ -93,6 +93,12 @@ const NAVIGATION_CONFIG = {
       icon: Settings,
       isActive: false,
     },
+    GALLERYLIST: {
+      title: "Gallery",
+      url: "/gallery-list",
+      icon: Frame,
+      isActive: false,
+    },
   },
 
   MODULES: {
@@ -315,6 +321,9 @@ const USER_ROLE_PERMISSIONS = {
       "STUDENTLIST",
       // "NEWSLETTERLIST",
       // "FAQLIST",
+      
+      // "FAQLIST",
+      // "GALLERYLIST",
       "BLOGLIST",
       // "SETTINGS",
     ],

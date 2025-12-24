@@ -9,14 +9,16 @@ import { useGetApiMutation } from '@/hooks/useGetApiMutation';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { BLOG_API } from '@/constants/apiConstants';
+import { BLOG_API, GALLERY_API } from '@/constants/apiConstants';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Select from 'react-select';
+import ReactSelect from 'react-select';
 import BlogPreview from '@/components/blog-preview/blog-preview';
+import { CKEditor } from "ckeditor4-react";
+
 
 const CreateBlog = () => {
   const { trigger, loading: isSubmitting } = useApiMutation();
@@ -63,6 +65,23 @@ const CreateBlog = () => {
     label: blog.blog_heading,
     slug: blog.blog_slug,
     status: blog.blog_status
+  })) || [];
+
+
+  const {
+    data: galleryData,
+    isLoading: isLoadingGallery,
+    isError: isErrorGallery,
+    refetch: refetchGallery,
+  } = useGetApiMutation({
+    url: GALLERY_API.dropdown,
+    queryKey: ["gallery-list"],
+  });
+  
+  const galleryOptions = galleryData?.data?.map((item, index) => ({
+    value: `${item.gallery_url}${item.gallery_image}`,
+    label: `Image ${index + 1}`,
+    image: item.gallery_image
   })) || [];
 
   const handleInputChange = (e) => {
@@ -674,6 +693,37 @@ const CreateBlog = () => {
                       <CardContent className="px-3 py-1">
                         <div className="flex justify-between items-center mb-1">
                           <h4 className="font-medium">Section {index + 1}</h4>
+                          {/* {galleryOptions.length > 0 && (
+      <Select
+        value={sub.gallery_image || ""}
+        onValueChange={(value) => handleSubInputChange(index, 'gallery_image', value)}
+      >
+        <SelectTrigger className="w-[180px] h-8">
+          <SelectValue placeholder="Add gallery image" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">None</SelectItem>
+          {galleryOptions.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center bg-gray-100">
+                  <img 
+                    src={option.value} 
+                    alt={option.label}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.parentElement.innerHTML = '<ImageIcon className="h-4 w-4 text-gray-400" />';
+                    }}
+                  />
+                </div>
+                <span>{option.label}</span>
+              </div>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    )} */}
                           <Button
                             type="button"
                             variant="ghost"
@@ -699,7 +749,7 @@ const CreateBlog = () => {
                             )}
                           </div>
                           
-                          <div className="space-y-1">
+                          {/* <div className="space-y-1">
                             <Label>Sub-description *</Label>
                             <Textarea
                               placeholder="Enter detailed content for this section"
@@ -710,7 +760,37 @@ const CreateBlog = () => {
                             {subErrors[index]?.blog_sub_description && (
                               <p className="text-sm text-red-500">{subErrors[index].blog_sub_description}</p>
                             )}
-                          </div>
+                          </div> */}
+                          <div className="space-y-1">
+  <Label>Sub-description *</Label>
+  <div className={subErrors[index]?.blog_sub_description ? 'border border-red-500 rounded' : ''}>
+    <CKEditor
+      initData={sub.blog_sub_description || ""}
+      config={{
+        versionCheck: false,
+        toolbar: [
+          { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+          { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'] },
+          { name: 'links', items: ['Link', 'Unlink'] },
+          { name: 'insert', items: ['Image', 'Table'] },
+          { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+          { name: 'colors', items: ['TextColor', 'BGColor'] },
+          { name: 'tools', items: ['Maximize'] }
+        ],
+        height: 200,
+        removePlugins: 'elementspath',
+        resize_enabled: false
+      }}
+      onChange={(event) => {
+        const data = event.editor.getData();
+        handleSubInputChange(index, 'blog_sub_description', data);
+      }}
+    />
+  </div>
+  {subErrors[index]?.blog_sub_description && (
+    <p className="text-sm text-red-500 mt-1">{subErrors[index].blog_sub_description}</p>
+  )}
+</div>
                         </div>
                       </CardContent>
                     </Card>
@@ -751,7 +831,7 @@ const CreateBlog = () => {
                       </Alert>
                     ) : (
                       <>
-                        <Select
+                        <ReactSelect
                           isMulti
                           options={blogOptions}
                           value={selectedRelatedBlogs}

@@ -15,7 +15,7 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
   const [open, setOpen] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
 
-  // Scroll to section when clicked in table of contents
+
   const scrollToSection = (index) => {
     setActiveSection(index);
     const element = document.getElementById(`section-${index}`);
@@ -24,7 +24,7 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
     }
   };
 
-  // Format date for display
+  
   const formatDate = (dateString) => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -136,9 +136,9 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
 
 
 
-          {/* Main Content Area */}
+      
           <div className="flex flex-row gap-8 w-full">
-            {/* Left Sidebar - Table of Contents (30%) */}
+          
             {blogSubs.length > 0 && (
               <aside className="w-[30%]">
                 <div className="sticky top-6">
@@ -168,9 +168,9 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
               </aside>
             )}
 
-            {/* Main Content - Blog Sections (70%) */}
+        
             <main className={`w-[70%]`}>
-              {/* Blog Sections */}
+            
               {blogSubs.length > 0 ? (
                 <div className="space-y-8">
                   {blogSubs.map((sub, index) => (
@@ -183,9 +183,13 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
                         {sub.blog_sub_heading || `Section ${index + 1}`}
                       </h2>
                       <div className="prose prose-gray max-w-none">
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                          {sub.blog_sub_description || "No description provided."}
-                        </p>
+                 
+                      <div 
+              className="ck-content"
+              dangerouslySetInnerHTML={{ __html: sub.blog_sub_description }} 
+            />
+                          
+                       
                       </div>
                     </article>
                   ))}
@@ -216,7 +220,7 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
 
 
 
-           {/* Related Blogs Section */}
+       
            {activeRelatedBlogs.length > 0 && (
                 <section className="mt-12 pt-8 border-t">
                   <div className="mb-6">
@@ -225,9 +229,9 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {activeRelatedBlogs.map((blog) => (
+                    {activeRelatedBlogs.map((blog ,index) => (
                       <article 
-                        key={blog.id}
+                        key={index}
                         className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                       >
                         <div className="p-5">
@@ -250,7 +254,7 @@ const BlogPreview = ({ formData, blogSubs, selectedRelatedBlogs, previewImage, i
               )}
         </div>
 
-        {/* Footer Actions */}
+    
         
       </DialogContent>
     </Dialog>

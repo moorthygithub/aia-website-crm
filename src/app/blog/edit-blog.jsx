@@ -27,6 +27,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { CKEditor } from 'ckeditor4-react';
 
 const EditBlog = () => {
   const { id } = useParams();
@@ -893,7 +894,7 @@ const EditBlog = () => {
                             )}
                           </div>
                           
-                          <div className="space-y-1">
+                          {/* <div className="space-y-1">
                             <Label>Sub-description *</Label>
                             <Textarea
                               placeholder="Enter detailed content for this section"
@@ -903,6 +904,36 @@ const EditBlog = () => {
                             />
                             {subErrors[index]?.blog_sub_description && (
                               <p className="text-sm text-red-500">{subErrors[index].blog_sub_description}</p>
+                            )}
+                          </div> */}
+                             <div className="space-y-1">
+                            <Label>Sub-description *</Label>
+                            <div className={subErrors[index]?.blog_sub_description ? 'border border-red-500 rounded' : ''}>
+                              <CKEditor
+                                initData={sub.blog_sub_description || ""}
+                                config={{
+                                  versionCheck: false,
+                                  toolbar: [
+                                    { name: 'basicstyles', items: ['Bold', 'Italic', 'Underline', 'Strike'] },
+                                    { name: 'paragraph', items: ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent'] },
+                                    { name: 'links', items: ['Link', 'Unlink'] },
+                                    { name: 'insert', items: ['Image', 'Table'] },
+                                    { name: 'styles', items: ['Styles', 'Format', 'Font', 'FontSize'] },
+                                    { name: 'colors', items: ['TextColor', 'BGColor'] },
+                                    { name: 'tools', items: ['Maximize'] }
+                                  ],
+                                  height: 200,
+                                  removePlugins: 'elementspath',
+                                  resize_enabled: false
+                                }}
+                                onChange={(event) => {
+                                  const data = event.editor.getData();
+                                  handleSubInputChange(index, 'blog_sub_description', data);
+                                }}
+                              />
+                            </div>
+                            {subErrors[index]?.blog_sub_description && (
+                              <p className="text-sm text-red-500 mt-1">{subErrors[index].blog_sub_description}</p>
                             )}
                           </div>
                         </div>

@@ -40,6 +40,14 @@ export const BLOG_API = {
   deleteRelated: (id) => `/blog-related/${id}`,
   updateById: (id) => `/blog/${id}?_method=PUT`,
 };
+export const GALLERY_API = {
+  list: "/link-gallery",
+  create: "/link-gallery",
+  dropdown: "/link-gallerys",
+  byId: (id) => `/link-gallery/${id}`,
+  delete: (id) => `/link-gallery/${id}`,
+  updateById: (id) => `/link-gallery/${id}?_method=PUT`,
+};
 export const PAGE_TWO_API = {
   dropdown: "/page-two",
 };

@@ -27,6 +27,7 @@ import LoadingBar from "@/components/loader/loading-bar";
 import { Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
 import EditBlog from "../app/blog/edit-blog";
+import GalleryList from "@/app/gallery/gallery-list";
 import AuthRoute from "./auth-route";
 import ProtectedRoute from "./protected-route";
 
@@ -222,6 +223,14 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <EditBlog />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/gallery-list"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <GalleryList />
               </Suspense>
             }
           />
