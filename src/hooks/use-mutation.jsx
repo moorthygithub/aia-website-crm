@@ -1,12 +1,9 @@
-import BASE_URL from "@/config/base-url";
-import axios from "axios";
-import Cookies from "js-cookie";
+import apiClient from "@/api/apiClient";
 import { useState } from "react";
 
 export function useApiMutation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const token = Cookies.get("token");
 
   const trigger = async ({
     url,
@@ -19,15 +16,16 @@ export function useApiMutation() {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios({
-        url: `${BASE_URL}${url}`,
+      const response = await apiClient({
+        // url: `${BASE_URL}${url}`,
+        url: `${url}`,
         method,
         data,
         params,
         responseType,
         headers: {
           ...headers,
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          // ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
       });
       if (responseType == "blob") {

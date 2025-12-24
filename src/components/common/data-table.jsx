@@ -17,7 +17,13 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronLeft, ChevronRight, Search, SquarePlus } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Search,
+  SquarePlus,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -84,40 +90,51 @@ const DataTable = ({
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => {
-         
-                  const columnDef = columns.find(col => 
-                    col.accessorKey === column.id || col.id === column.id
+                  const columnDef = columns.find(
+                    (col) =>
+                      col.accessorKey === column.id || col.id === column.id
                   );
-                  
+
                   return (
                     <DropdownMenuCheckboxItem
                       key={column.id}
                       className="text-xs capitalize"
                       checked={column.getIsVisible()}
-                      onCheckedChange={(value) => column.toggleVisibility(!!value)}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
                     >
-       
                       {columnDef?.header || column.id}
                     </DropdownMenuCheckboxItem>
                   );
                 })}
             </DropdownMenuContent>
           </DropdownMenu>
-          
-   
-          {addButton && (
-            <Link to={addButton.to}>
-              <Button variant="default" size="sm" className="h-9">
-                <SquarePlus className="h-3 w-3 mr-2" /> {addButton.label}
+
+          {addButton &&
+            (addButton.to ? (
+              <Link to={addButton.to}>
+                <Button variant="default" size="sm" className="h-9">
+                  <SquarePlus className="h-3 w-3 mr-2" />
+                  {addButton.label}
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="default"
+                size="sm"
+                className="h-9"
+                onClick={addButton.onClick}
+              >
+                <SquarePlus className="h-3 w-3 mr-2" />
+                {addButton.label}
               </Button>
-            </Link>
-          )}
-          
-  
-          {extraContent}
+            ))}
+
+          {/* {extraContent} */}
         </div>
       </div>
-     
+
       <div className="rounded-none border min-h-[31rem] grid grid-cols-1">
         <Table>
           <TableHeader>

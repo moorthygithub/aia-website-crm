@@ -50,6 +50,25 @@ const NAVIGATION_CONFIG = {
       icon: Frame,
       isActive: false,
     },
+    COUNTRYLIST: {
+      title: "Country List",
+      url: "/country-list",
+      icon: Frame,
+      isActive: false,
+    },
+    LETUREYOUTUBELIST: {
+      title: "Leture Youtube",
+      url: "/lecture-youtube",
+      icon: Frame,
+      isActive: false,
+    },
+    STUDENTLIST: {
+      title: "Student List",
+      url: "/student-list",
+      icon: Frame,
+      isActive: false,
+    },
+
     FAQLIST: {
       title: "FAQ",
       url: "/faq-list",
@@ -279,11 +298,28 @@ const USER_ROLE_PERMISSIONS = {
       "POPUPLIST",
       "BANNERLIST",
       "COMPANYLIST",
+      "COUNTRYLIST",
+      "LETUREYOUTUBELIST",
+      "STUDENTLIST",
+      "MEMBERSHIP",
+      "DONOR",
+      "RECEIPT",
+      "SCHOOL",
       "FAQLIST",
       "BLOGLIST",
-     
     ],
-    navMainReport: [],
+    navMainReport: [
+      "SUMMARY",
+      "POPUPLIST",
+      "DOWNLOADS",
+      "COUNTRYLIST",
+      "LETUREYOUTUBELIST",
+      "STUDENTLIST",
+      "OTHER",
+      "SETTINGS",
+      "FAQLIST",
+      "BLOGLIST",
+    ],
   },
 
   2: {

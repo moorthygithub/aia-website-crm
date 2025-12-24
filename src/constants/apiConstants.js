@@ -44,5 +44,21 @@ export const PAGE_TWO_API = {
 };
 export const CHANGE_PASSWORD_API = {
   create: "/panel-change-password",
-  
+}
+export const COUNTRY_API = {
+  list: "/country",
+  dropdown: "/countrys",
+  byId: (id) => `/country/${id}`,
+};
+export const LETUREYOUTUBE_API = {
+  list: "/lecture-youtube",
+  byId: (id) => `/lecture-youtube/${id}`,
+};
+
+export const YOUTUBEFOR_API = {
+  list: "/youtubeFor",
+};
+export const STUDENT_API = {
+  list: "/student",
+  byId: (id) => `/student/${id}`,
 };

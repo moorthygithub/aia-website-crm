@@ -1,7 +1,8 @@
+// apiClient.js
 import BASE_URL from "@/config/base-url";
+import { store } from "@/store/store";
 import useAppLogout from "@/utils/logout";
 import axios from "axios";
-import Cookies from "js-cookie";
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -12,7 +13,9 @@ const apiClient = axios.create({
 
 apiClient.interceptors.request.use(
   (config) => {
-    const token = Cookies.get("token");
+    const state = store.getState();
+    const token = state.auth?.token;
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -28,7 +31,6 @@ apiClient.interceptors.response.use(
 
     if (status === 401) {
       useAppLogout();
-
       window.location.replace("/");
     }
 
