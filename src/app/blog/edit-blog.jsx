@@ -9,13 +9,13 @@ import { useGetApiMutation } from '@/hooks/useGetApiMutation';
 import { toast } from 'sonner';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { BLOG_API } from '@/constants/apiConstants';
+import { BLOG_API, GALLERY_API } from '@/constants/apiConstants';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import Select from 'react-select';
+import ReactSelect from 'react-select';
 import BlogPreview from '@/components/blog-preview/blog-preview';
 import {
   AlertDialog,
@@ -28,7 +28,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { CKEditor } from 'ckeditor4-react';
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 const EditBlog = () => {
   const { id } = useParams();
   const { trigger, loading: isSubmitting } = useApiMutation();
@@ -61,7 +67,7 @@ const EditBlog = () => {
   const [previewImage, setPreviewImage] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
-
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const {
     data: blogData,
     isLoading,
@@ -93,6 +99,38 @@ const EditBlog = () => {
         })) || [];
     }, [blogDropdownData?.data, id]);
 
+  const {
+    data: galleryData,
+    isLoading: isLoadingGallery,
+    isError: isErrorGallery,
+    refetch: refetchGallery,
+  } = useGetApiMutation({
+    url: GALLERY_API.dropdown,
+    queryKey: ["gallery-list"],
+  });
+  
+  const galleryOptions = galleryData?.data?.map((item, index) => ({
+    value: `${item.gallery_url}${item.gallery_image}`,
+    label: `Image ${index + 1}`,
+    image: item.gallery_image
+  })) || [];
+  const handleGalleryImageSelect = async (option) => {
+    if (option) {
+      setSelectedGalleryImage(option);
+      
+    
+      try {
+        await navigator.clipboard.writeText(option.value);
+        toast.success(`Image URL copied: ${option.image}`);
+      } catch (error) {
+        toast.error("Failed to copy URL");
+      }
+      
+    
+    } else {
+      setSelectedGalleryImage(null);
+    }
+  };
     useEffect(() => {
       if (blogData?.data) {
         const data = blogData.data;
@@ -869,6 +907,7 @@ const EditBlog = () => {
                       <CardContent className="px-3 py-1">
                         <div className="flex justify-between items-center mb-1">
                           <h4 className="font-medium">Section {index + 1} {sub.id && <Badge variant="outline" className="ml-2 text-xs">Existing</Badge>}</h4>
+                           
                           <Button
                             type="button"
                             variant="ghost"
@@ -940,6 +979,7 @@ const EditBlog = () => {
                       </CardContent>
                     </Card>
                   ))}
+                     <div className=" flex flex-row items-center gap-4">
                   <Button
                     type="button"
                     variant="outline"
@@ -950,6 +990,37 @@ const EditBlog = () => {
                     <Plus className="h-4 w-4" />
                     Add Section
                   </Button>
+               
+                            <Select
+                              value={selectedGalleryImage?.value}
+                              onValueChange={(value) => {
+                                const option = galleryOptions.find(opt => opt.value === value);
+                                handleGalleryImageSelect(option);
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select an image URL " />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {galleryOptions.map((option) => (
+                                  <SelectItem key={option.value} value={option.value}>
+                                    <div className="flex items-center gap-2">
+                                      <div className=" rounded overflow-hidden flex-shrink-0">
+                                        <img 
+                                          src={option.value} 
+                                          alt={option.label}
+                                          className="w-8 h-8 object-cover"
+                                        />
+                                      </div>
+                                      <span>{option.label}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            
+                          
+                          </div>
                 </TabsContent>
 
                 <TabsContent value="related" className="space-y-4">
@@ -976,7 +1047,7 @@ const EditBlog = () => {
                       </Alert>
                     ) : (
                       <>
-                        <Select
+                        <ReactSelect
                           isMulti
                           options={blogOptions}
                           value={selectedRelatedBlogs}

@@ -323,7 +323,7 @@ const USER_ROLE_PERMISSIONS = {
       // "FAQLIST",
       
       // "FAQLIST",
-      // "GALLERYLIST",
+      "GALLERYLIST",
       "BLOGLIST",
       // "SETTINGS",
     ],

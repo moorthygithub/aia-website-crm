@@ -18,7 +18,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import ReactSelect from 'react-select';
 import BlogPreview from '@/components/blog-preview/blog-preview';
 import { CKEditor } from "ckeditor4-react";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const CreateBlog = () => {
   const { trigger, loading: isSubmitting } = useApiMutation();
@@ -88,7 +94,7 @@ const CreateBlog = () => {
     if (option) {
       setSelectedGalleryImage(option);
       
-      // Copy URL to clipboard
+    
       try {
         await navigator.clipboard.writeText(option.value);
         toast.success(`Image URL copied: ${option.image}`);
@@ -96,8 +102,7 @@ const CreateBlog = () => {
         toast.error("Failed to copy URL");
       }
       
-      // Set preview image
-      setPreviewImage(option.value);
+    
     } else {
       setSelectedGalleryImage(null);
     }
@@ -711,38 +716,7 @@ const CreateBlog = () => {
                       <CardContent className="px-3 py-1">
                         <div className="flex justify-between items-center mb-1">
                           <h4 className="font-medium">Section {index + 1}</h4>
-                          <div className="space-y-2 md:col-span-2">
- 
-  
-  <ReactSelect
-    options={galleryOptions}
-    value={selectedGalleryImage}
-    onChange={handleGalleryImageSelect}
-    placeholder="Select an image - URL will be auto-copied"
-    className="react-select-container"
-    classNamePrefix="react-select"
-    styles={customSelectStyles}
-    formatOptionLabel={(option) => (
-      <div className="flex items-center gap-2">
-        <div className="w-4 h-4 rounded overflow-hidden flex-shrink-0">
-          <img 
-            src={option.value} 
-            alt={option.label}
-            className="w-full h-full object-cover"
-          />
-        </div>
-        <span>{option.label}</span>
-      </div>
-    )}
-    noOptionsMessage={() => "No gallery images found"}
-  />
-  
-  {selectedGalleryImage && (
-    <div className="mt-2 text-xs text-gray-500">
-      Selected: {selectedGalleryImage.image} - URL copied to clipboard
-    </div>
-  )}
-</div>
+               
                           <Button
                             type="button"
                             variant="ghost"
@@ -814,7 +788,8 @@ const CreateBlog = () => {
                       </CardContent>
                     </Card>
                   ))}
-                  <Button
+                   <div className=" flex flex-row items-center gap-4">
+                 <Button
                     type="button"
                     variant="outline"
                     size="sm"
@@ -824,6 +799,39 @@ const CreateBlog = () => {
                     <Plus className="h-4 w-4" />
                     Add Section
                   </Button>
+                  <Select
+    value={selectedGalleryImage?.value}
+    onValueChange={(value) => {
+      const option = galleryOptions.find(opt => opt.value === value);
+      handleGalleryImageSelect(option);
+    }}
+  >
+    <SelectTrigger className="w-full">
+      <SelectValue placeholder="Select an image URL " />
+    </SelectTrigger>
+    <SelectContent>
+      {galleryOptions.map((option) => (
+        <SelectItem key={option.value} value={option.value}>
+          <div className="flex items-center gap-2">
+            <div className=" rounded overflow-hidden flex-shrink-0">
+              <img 
+                src={option.value} 
+                alt={option.label}
+                className="w-8 h-8 object-cover"
+              />
+            </div>
+            <span>{option.label}</span>
+          </div>
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+                 </div>
+
+
+
+
+
                 </TabsContent>
 
                 <TabsContent value="related" className="space-y-4">
