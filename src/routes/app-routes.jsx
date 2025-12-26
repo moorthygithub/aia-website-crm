@@ -22,7 +22,6 @@ import StudentForm from "@/app/student/student-form";
 import StudentList from "@/app/student/student-list";
 import Maintenance from "@/components/common/maintenance";
 import ErrorBoundary from "@/components/error-boundry/error-boundry";
-import ForgotPassword from "@/components/forgot-password/forgot-password";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
@@ -36,14 +35,14 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<AuthRoute />}>
           <Route path="/" element={<Login />} />
-          <Route
+          {/* <Route
             path="/forgot-password"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <ForgotPassword />
               </Suspense>
             }
-          />
+          /> */}
           <Route path="/maintenance" element={<Maintenance />} />
         </Route>
 
@@ -153,22 +152,7 @@ function AppRoutes() {
               </Suspense>
             }
           />
-          {/* <Route
-            path="/add-company"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <CreateCompany />
-              </Suspense>
-            }
-          />
-          <Route
-            path="/edit-company/:id"
-            element={
-              <Suspense fallback={<LoadingBar />}>
-                <EditCompany />
-              </Suspense>
-            }
-          /> */}
+
           <Route
             path="/faq-list"
             element={

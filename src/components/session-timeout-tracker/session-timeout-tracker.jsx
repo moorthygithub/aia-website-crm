@@ -1,12 +1,12 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
-import Cookies from "js-cookie";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
 
 const SessionTimeoutTracker = ({ expiryTime, onLogout }) => {
   const queryClient = useQueryClient();
   const [isInitialized, setIsInitialized] = React.useState(false);
-
+  const token = useSelector((state) => state.auth.token);
   React.useEffect(() => {
     const initTimer = setTimeout(() => {
       setIsInitialized(true);
@@ -16,8 +16,6 @@ const SessionTimeoutTracker = ({ expiryTime, onLogout }) => {
   }, []);
 
   const isTokenPresent = () => {
-    const token = Cookies.get("token");
-
     return !!token;
   };
 
