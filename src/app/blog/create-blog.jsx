@@ -16,10 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { BLOG_API, GALLERY_API } from "@/constants/apiConstants";
+import { BLOG_API, COURSE_API, GALLERY_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,11 +30,10 @@ import {
   Eye,
   EyeOff,
   Image as ImageIcon,
-  Loader2,
   Plus,
   Trash2,
   Type,
-  User
+  User,
 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -46,7 +44,10 @@ const CreateBlog = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showPreview, setShowPreview] = useState(true);
-
+  const { data: coursesData } = useGetApiMutation({
+    url: COURSE_API.courses,
+    queryKey: ["courses-dropdown"],
+  });
   const [formData, setFormData] = useState({
     blog_heading: "",
     blog_short_description: "",
@@ -395,104 +396,6 @@ const CreateBlog = () => {
     if (fileInput) fileInput.value = "";
   };
 
-  const customSelectStyles = {
-    control: (base, state) => ({
-      ...base,
-      minHeight: "40px",
-      borderColor: state.isFocused ? "hsl(var(--ring))" : "hsl(var(--input))",
-      backgroundColor: "hsl(var(--background))",
-      "&:hover": {
-        borderColor: "hsl(var(--ring))",
-      },
-      boxShadow: state.isFocused ? "0 0 0 1px hsl(var(--ring))" : "none",
-      borderRadius: "calc(var(--radius) - 2px)",
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: "hsl(var(--popover))",
-      border: "1px solid hsl(var(--border))",
-      borderRadius: "calc(var(--radius) - 2px)",
-      boxShadow: "var(--shadow-md)",
-      zIndex: 50,
-    }),
-    menuList: (base) => ({
-      ...base,
-      padding: "4px",
-      maxHeight: "200px",
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected
-        ? "hsl(var(--accent))"
-        : state.isFocused
-        ? "hsl(var(--accent))"
-        : "transparent",
-      color: state.isSelected
-        ? "hsl(var(--accent-foreground))"
-        : "hsl(var(--foreground))",
-      borderRadius: "calc(var(--radius) - 4px)",
-      padding: "8px 12px",
-      fontSize: "14px",
-      cursor: "pointer",
-      "&:active": {
-        backgroundColor: "hsl(var(--accent))",
-      },
-    }),
-    multiValue: (base) => ({
-      ...base,
-      backgroundColor: "hsl(var(--accent))",
-      borderRadius: "calc(var(--radius) - 2px)",
-    }),
-    multiValueLabel: (base) => ({
-      ...base,
-      color: "hsl(var(--accent-foreground))",
-      fontSize: "13px",
-      padding: "2px 6px",
-    }),
-    multiValueRemove: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      borderRadius: "0 calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0",
-      "&:hover": {
-        backgroundColor: "hsl(var(--destructive))",
-        color: "hsl(var(--destructive-foreground))",
-      },
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      fontSize: "14px",
-    }),
-    input: (base) => ({
-      ...base,
-      color: "hsl(var(--foreground))",
-      fontSize: "14px",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: "hsl(var(--foreground))",
-      fontSize: "14px",
-    }),
-    indicatorSeparator: (base) => ({
-      ...base,
-      backgroundColor: "hsl(var(--border))",
-    }),
-    dropdownIndicator: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      "&:hover": {
-        color: "hsl(var(--foreground))",
-      },
-    }),
-    clearIndicator: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      "&:hover": {
-        color: "hsl(var(--destructive))",
-      },
-    }),
-  };
-
   return (
     <div className="max-w-full mx-auto">
       <PageHeader
@@ -501,6 +404,26 @@ const CreateBlog = () => {
         description="Create your blog with live preview"
         rightContent={
           <div className="flex justify-end gap-2 pt-4">
+            <div className="flex gap-3 justify-end">
+              <Button type="button" variant="outline" onClick={handleReset}>
+                Reset All
+              </Button>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="px-8"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  "Publish Blog"
+                )}
+              </Button>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -629,13 +552,24 @@ const CreateBlog = () => {
                           <BookOpen className="h-4 w-4" />
                           Course *
                         </Label>
-                        <Input
-                          name="blog_course"
-                          placeholder="Enter course name (e.g., CFE, CIA, CAMS)"
+
+                        <Select
                           value={formData.blog_course}
-                          onChange={handleInputChange}
-                          className={errors.blog_course ? "border-red-500" : ""}
-                        />
+                          onValueChange={(v) =>
+                            setFormData({ ...formData, blog_course: v })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Courses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {coursesData?.data?.map((c, key) => (
+                              <SelectItem key={key} value={c.courses_name}>
+                                {c.courses_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         {errors.blog_course && (
                           <p className="text-sm text-red-500">
                             {errors.blog_course}
@@ -672,7 +606,7 @@ const CreateBlog = () => {
                           <ImageIcon className="h-4 w-4" />
                           Image Alt Text *
                         </Label>
-                        <Input
+                        <Textarea
                           name="blog_images_alt"
                           placeholder="Describe the blog image"
                           value={formData.blog_images_alt}
@@ -1004,29 +938,6 @@ const CreateBlog = () => {
                   </div>
                 </TabsContent>
               </Tabs>
-
-              <Separator className="my-6" />
-
-              <div className="flex gap-3 justify-end">
-                <Button type="button" variant="outline" onClick={handleReset}>
-                  Reset All
-                </Button>
-                <Button
-                  type="submit"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="px-8"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Publishing...
-                    </>
-                  ) : (
-                    "Publish Blog"
-                  )}
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>
@@ -1177,7 +1088,7 @@ const CreateBlog = () => {
                         {imageDimensions.width === 1400 &&
                         imageDimensions.height === 450 ? (
                           <span className="text-green-700">
-                            ✓ Image dimensions are correct (1400×450)
+                            ✓ Image dimensions are correct
                           </span>
                         ) : (
                           <span className="text-yellow-700">

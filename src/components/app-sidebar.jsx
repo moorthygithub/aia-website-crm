@@ -120,7 +120,7 @@ const USER_ROLE_PERMISSIONS = {
       "STUDENTLIST",
       // "NEWSLETTERLIST",
       // "FAQLIST",
-      // "GALLERYLIST",
+      "GALLERYLIST",
       "BLOGLIST",
       // "SETTINGS",
     ],

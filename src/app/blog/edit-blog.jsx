@@ -21,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
@@ -29,7 +30,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { BLOG_API, GALLERY_API } from "@/constants/apiConstants";
+import { BLOG_API, COURSE_API, GALLERY_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -50,7 +51,6 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import Select from "react-select";
 import { toast } from "sonner";
 
 const EditBlog = () => {
@@ -67,7 +67,10 @@ const EditBlog = () => {
     index: null,
   });
   const [existingImageUrl, setExistingImageUrl] = useState("");
-
+  const { data: coursesData } = useGetApiMutation({
+    url: COURSE_API.courses,
+    queryKey: ["courses-dropdown"],
+  });
   const [formData, setFormData] = useState({
     blog_heading: "",
     blog_short_description: "",
@@ -612,6 +615,26 @@ const EditBlog = () => {
         description="Edit your blog with live preview"
         rightContent={
           <div className="flex justify-end gap-2 pt-4">
+            <div className="flex gap-3 justify-end">
+              <Button type="button" variant="outline" onClick={handleReset}>
+                Reset All
+              </Button>
+              <Button
+                type="submit"
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                className="px-8"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Updating...
+                  </>
+                ) : (
+                  "Update Blog"
+                )}
+              </Button>
+            </div>
             <Button
               variant="outline"
               size="sm"
@@ -636,7 +659,6 @@ const EditBlog = () => {
               <ArrowLeft className="w-3 h-3" />
               Back
             </Button>
-            {/* </div> */}
           </div>
         }
       />
@@ -743,13 +765,23 @@ const EditBlog = () => {
                           <BookOpen className="h-4 w-4" />
                           Course *
                         </Label>
-                        <Input
-                          name="blog_course"
-                          placeholder="Enter course name (e.g., CFE, CIA, CAMS)"
+                        <Select
                           value={formData.blog_course}
-                          onChange={handleInputChange}
-                          className={errors.blog_course ? "border-red-500" : ""}
-                        />
+                          onValueChange={(v) =>
+                            setFormData({ ...formData, blog_course: v })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Courses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {coursesData?.data?.map((c, key) => (
+                              <SelectItem key={key} value={c.courses_name}>
+                                {c.courses_name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         {errors.blog_course && (
                           <p className="text-sm text-red-500">
                             {errors.blog_course}
@@ -786,7 +818,7 @@ const EditBlog = () => {
                           <ImageIcon className="h-4 w-4" />
                           Image Alt Text *
                         </Label>
-                        <Input
+                        <Textarea
                           name="blog_images_alt"
                           placeholder="Describe the blog image"
                           value={formData.blog_images_alt}
@@ -817,6 +849,7 @@ const EditBlog = () => {
                             options={[
                               { label: "Active", value: "Active" },
                               { label: "Inactive", value: "Inactive" },
+                              { label: "Draft", value: "Draft" },
                             ]}
                           />
                         </div>
@@ -1193,29 +1226,6 @@ const EditBlog = () => {
                   </div>
                 </TabsContent>
               </Tabs>
-
-              <Separator className="my-6" />
-
-              <div className="flex gap-3 justify-end">
-                <Button type="button" variant="outline" onClick={handleReset}>
-                  Reset All
-                </Button>
-                <Button
-                  type="submit"
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="px-8"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Blog"
-                  )}
-                </Button>
-              </div>
             </CardContent>
           </Card>
         </div>

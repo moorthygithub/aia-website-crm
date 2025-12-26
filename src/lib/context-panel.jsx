@@ -1,3 +1,4 @@
+import LoadingBar from "@/components/loader/loading-bar";
 import { PANEL_CHECK } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { logout } from "@/store/auth/authSlice";
@@ -21,7 +22,7 @@ const AppProvider = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const Logout = appLogout();
-  const { trigger } = useApiMutation();
+  const { trigger, loading } = useApiMutation();
 
   const reduxToken = useSelector((state) => state.auth.token);
   const token = getAuthToken(reduxToken);
@@ -39,7 +40,6 @@ const AppProvider = ({ children }) => {
 
   const initializeApp = async () => {
     try {
-      /** 1️⃣ ENV validation */
       if (!secretKey || !validationKey) {
         throw new Error("Missing environment variables");
       }
@@ -96,7 +96,9 @@ const AppProvider = ({ children }) => {
       navigate("/maintenance");
     }
   };
-
+  if (loading) {
+    <LoadingBar />;
+  }
   useEffect(() => {
     initializeApp();
     const interval = setInterval(pollPanelStatus, 30000);
