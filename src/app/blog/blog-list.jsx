@@ -8,7 +8,7 @@ import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 import { Edit, Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -20,11 +20,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import moment from "moment";
+import { Button } from "@/components/ui/button";
 
 const BlogList = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
-  
+
   const {
     data: data,
     isLoading,
@@ -34,7 +36,7 @@ const BlogList = () => {
     url: BLOG_API.list,
     queryKey: ["blog-list"],
   });
-
+  const navigate = useNavigate();
   const { trigger: deleteTrigger, loading: isDeleting } = useApiMutation();
 
   const IMAGE_FOR = "Blog";
@@ -52,17 +54,17 @@ const BlogList = () => {
     try {
       const res = await deleteTrigger({
         url: BLOG_API.delete(selectedBlog.id),
-        method: 'delete',
+        method: "delete",
       });
 
       if (res?.code === 200) {
-        toast.success(res?.msg || 'Blog deleted successfully');
+        toast.success(res?.msg || "Blog deleted successfully");
         refetch();
       } else {
-        toast.error(res?.msg || 'Failed to delete blog');
+        toast.error(res?.msg || "Failed to delete blog");
       }
     } catch (error) {
-      toast.error(error?.response?.data?.msg || 'Something went wrong');
+      toast.error(error?.response?.data?.msg || "Something went wrong");
     } finally {
       setDeleteDialogOpen(false);
       setSelectedBlog(null);
@@ -99,19 +101,28 @@ const BlogList = () => {
       header: "Course",
       accessorKey: "blog_course",
     },
+
     {
       header: "Created Date",
       accessorKey: "blog_created",
+      cell: ({ row }) => {
+        const date = row.original.blog_created;
+        const formattedDate = date ? moment(date).format("DD MMM YYYY") : "-";
+        return <span>{formattedDate}</span>;
+      },
     },
+
     {
       header: "Status",
       accessorKey: "blog_status",
       cell: ({ row }) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          row.original.blog_status === "Active" 
-            ? "bg-green-100 text-green-800" 
-            : "bg-red-100 text-red-800"
-        }`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            row.original.blog_status === "Active"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
           {row.original.blog_status}
         </span>
       ),
@@ -121,13 +132,13 @@ const BlogList = () => {
       accessorKey: "actions",
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
-          <Link 
-            title="Edit blog" 
-            to={`/edit-blog/${row.original.id}`} 
-            className="cursor-pointer hover:text-blue-600 transition-colors"
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => navigate(`/edit-blog/${row.original.id}`)}
           >
             <Edit className="h-4 w-4" />
-          </Link>
+          </Button>
           <button
             title="Delete blog"
             onClick={() => handleDeleteClick(row.original)}
@@ -151,12 +162,11 @@ const BlogList = () => {
         pageSize={10}
         searchPlaceholder="Search blogs..."
         addButton={{
-          to: '/add-blog', 
-          label: 'Add Blog' 
+          to: "/add-blog",
+          label: "Add Blog",
         }}
       />
 
-     
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -164,14 +174,16 @@ const BlogList = () => {
               Delete Blog
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the blog <span className="font-bold text-red-800">{selectedBlog?.blog_heading}</span>? 
-              This action cannot be undone and will permanently remove the blog and all associated data.
+              Are you sure you want to delete the blog{" "}
+              <span className="font-bold text-red-800">
+                {selectedBlog?.blog_heading}
+              </span>
+              ? This action cannot be undone and will permanently remove the
+              blog and all associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>
-              Cancel
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               disabled={isDeleting}

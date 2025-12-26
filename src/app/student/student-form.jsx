@@ -28,6 +28,8 @@ import PageHeader from "@/components/common/page-header";
 import { User } from "lucide-react";
 import { GroupButton } from "@/components/group-button";
 import { Card } from "@/components/ui/card";
+import CompanyDialog from "../company/create-company";
+import CountryForm from "../country/country-form";
 
 const initialState = {
   student_uid: "",
@@ -59,6 +61,8 @@ const StudentForm = () => {
   const navigate = useNavigate();
   const isEditMode = Boolean(id);
   const queryClient = useQueryClient();
+  const [openCompany, setCompanyOpen] = useState(false);
+  const [openCountry, setCountryOpen] = useState(false);
 
   const [data, setData] = useState(initialState);
   const [errors, setErrors] = useState({});
@@ -292,7 +296,7 @@ const StudentForm = () => {
           }
         />
         <Card className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-3  lg:grid-cols-4  gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3  lg:grid-cols-4  gap-7">
             <div>
               <label className="text-sm font-medium">UID *</label>
               <Input
@@ -367,7 +371,7 @@ const StudentForm = () => {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4   gap-x-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             <div>
               <label className="text-sm font-medium">Designation</label>
               <Input
@@ -379,11 +383,23 @@ const StudentForm = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Country </label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Country
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setCountryOpen(true)}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+                >
+                  + Country
+                </button>
+              </div>
               <Select
-                value={data.student_country_id}
+                value={data.student_country_id?.toString() || ""}
                 onValueChange={(v) =>
-                  setData({ ...data, student_country_id: v })
+                  setData({ ...data, student_country_id: Number(v) })
                 }
               >
                 <SelectTrigger>
@@ -391,7 +407,7 @@ const StudentForm = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {countriesData?.data?.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
+                    <SelectItem key={c.id} value={c.id.toString()}>
                       {c.country_name}
                     </SelectItem>
                   ))}
@@ -405,11 +421,24 @@ const StudentForm = () => {
             </div>
 
             <div>
-              <label className="text-sm font-medium">Company </label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">
+                  Company
+                </label>
+
+                <button
+                  type="button"
+                  onClick={() => setCompanyOpen(true)}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+                >
+                  + Company
+                </button>
+              </div>
+
               <Select
-                value={data.student_company_id}
+                value={data.student_company_id?.toString() || ""}
                 onValueChange={(v) =>
-                  setData({ ...data, student_company_id: v })
+                  setData({ ...data, student_company_id: Number(v) })
                 }
               >
                 <SelectTrigger>
@@ -417,12 +446,13 @@ const StudentForm = () => {
                 </SelectTrigger>
                 <SelectContent>
                   {companiesData?.data?.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
+                    <SelectItem key={c.id} value={c.id.toString()}>
                       {c.student_company_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
               {errors.student_company_id && (
                 <p className="text-xs text-red-500 mt-1">
                   {errors.student_company_id}
@@ -561,7 +591,6 @@ const StudentForm = () => {
                 requiredDimensions={[1080, 1080]}
               />
             </div>
-            {/* Office Image Alt */}
             <div className="col-span-2">
               <label className="text-sm font-medium">Office Image Alt</label>
               <Textarea
@@ -572,14 +601,8 @@ const StudentForm = () => {
                 }
                 rows={4}
               />
-              {/* {errors.student_office_image_alt && (
-            <p className="text-xs text-red-500 mt-1">
-              {errors.student_office_image_alt}
-            </p>
-          )} */}
             </div>
 
-            {/* Testimonial Section */}
             {data?.student_have_testimonial === "Yes" && (
               <div className="col-span-2">
                 <div className="py-2">
@@ -603,17 +626,8 @@ const StudentForm = () => {
               </div>
             )}
 
-            {/* Certificate Section */}
             {data?.student_have_certificate === "Yes" && (
               <>
-                {/* <div className="col-span-2">
-              <div className="py-2">
-                <h3 className="text-sm font-medium mb-4">
-                  Certificate Details
-                </h3>
-              </div>
-            </div> */}
-
                 <div className="col-span-2">
                   <label className="text-sm font-medium">LinkedIn Link *</label>
                   <Textarea
@@ -750,6 +764,16 @@ const StudentForm = () => {
           </div>
         </Card>
       </form>
+      <CompanyDialog
+        open={openCompany}
+        onClose={() => setCompanyOpen(false)}
+        companyId={null}
+      />
+      <CountryForm
+        isOpen={openCountry}
+        onClose={() => setCountryOpen(false)}
+        countryId={null}
+      />
     </div>
   );
 };

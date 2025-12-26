@@ -87,7 +87,6 @@ const CountryList = () => {
         isOpen={isDialogOpen}
         onClose={() => setIsDialogOpen(false)}
         countryId={selectedId}
-        refetch={refetch}
       />
     </>
   );

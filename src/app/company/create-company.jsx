@@ -1,46 +1,131 @@
-import PageHeader from "@/components/common/page-header";
+import { GroupButton } from "@/components/group-button";
 import ImageUpload from "@/components/image-upload/image-upload";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { COMPANY_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
+import { getImageBaseUrl } from "@/utils/imageUtils";
 import { useQueryClient } from "@tanstack/react-query";
-import { Building2, Loader2, Upload, X } from "lucide-react";
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-
-const CreateCompany = () => {
-  const { trigger, loading: isSubmitting } = useApiMutation();
-  const navigate = useNavigate();
+const initialState = {
+  student_company_name: "",
+  student_company_image_alt: "",
+  student_company_status: "Active",
+  student_company_image: null,
+};
+const CompanyDialog = ({ open, onClose, companyId }) => {
+  const isEdit = Boolean(companyId);
   const queryClient = useQueryClient();
-  const [formData, setFormData] = useState({
-    student_company_name: "",
-    student_company_image_alt: "",
-    student_company_image: null,
-  });
-
   const [errors, setErrors] = useState({});
+  const [formData, setFormData] = useState(initialState);
+  const { trigger: fetchCompany } = useApiMutation();
+  const { trigger, loading } = useApiMutation();
 
   const [preview, setPreview] = useState({
     student_company_image: "",
   });
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+  useEffect(() => {
+    if (!open) return;
+    if (!isEdit) {
+      setFormData(initialState);
+      setErrors({});
+      return;
+    }
+    const fetchData = async () => {
+      try {
+        const res = await fetchCompany({
+          url: COMPANY_API.byId(companyId),
+        });
+        const data = res.data;
+        setFormData({
+          student_company_name: data.student_company_name,
+          student_company_image_alt: data.student_company_image_alt,
+          student_company_status: data.student_company_status,
+          student_company_image: null,
+        });
+        const IMAGE_FOR = "Student Company";
+        const baseUrl = getImageBaseUrl(res?.image_url, IMAGE_FOR);
 
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+        setPreview({
+          student_company_image: `${baseUrl}${data.student_company_image}`,
+        });
+      } catch (err) {
+        toast.error(err.message || "Failed to load country data");
+      }
+    };
+    fetchData();
+  }, [open, companyId]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((p) => ({ ...p, [name]: value }));
+    setErrors((p) => ({ ...p, [name]: "" }));
+  };
+
+  const validate = () => {
+    const err = {};
+    if (!formData.student_company_name) err.student_company_name = "Required";
+    if (!formData.student_company_image_alt)
+      err.student_company_image_alt = "Required";
+    if (!preview.student_company_image) err.student_company_image = "Required";
+
+    setErrors(err);
+    return Object.keys(err).length === 0;
+  };
+
+  const handleSubmit = async () => {
+    if (!validate()) return;
+
+    const formDataObj = new FormData();
+
+    formDataObj.append("student_company_name", formData.student_company_name);
+    formDataObj.append(
+      "student_company_image_alt",
+      formData.student_company_image_alt
+    );
+    formDataObj.append(
+      "student_company_status",
+      formData.student_company_status
+    );
+
+    if (formData.student_company_image instanceof File) {
+      formDataObj.append(
+        "student_company_image",
+        formData.student_company_image
+      );
+    }
+    try {
+      const res = await trigger({
+        url: isEdit ? COMPANY_API.updateById(companyId) : COMPANY_API.create,
+        method: "post",
+        data: formDataObj,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (res?.code === 200 || res?.code === 201) {
+        toast.success(res.msg);
+        queryClient.invalidateQueries(["company-list"]);
+        queryClient.invalidateQueries(["companies-dropdown"]);
+        onClose();
+      } else {
+        toast.error(res?.msg || "Failed");
+      }
+    } catch (error) {
+      const errors = error?.response?.data?.msg;
+      toast.error(errors || "Something went wrong");
     }
   };
   const handleImageChange = (fieldName, file) => {
@@ -51,201 +136,101 @@ const CreateCompany = () => {
       setErrors({ ...errors, [fieldName]: "" });
     }
   };
+
   const handleRemoveImage = (fieldName) => {
     setFormData({ ...formData, [fieldName]: null });
     setPreview({ ...preview, [fieldName]: "" });
   };
-  const validateForm = () => {
-    const newErrors = {};
-    let isValid = true;
-
-    if (!formData.student_company_name.trim()) {
-      newErrors.student_company_name = "Company name is required";
-      isValid = false;
-    }
-
-    if (!formData.student_company_image_alt.trim()) {
-      newErrors.student_company_image_alt = "Image alt text is required";
-      isValid = false;
-    }
-
-    if (!preview.student_company_image && !formData.student_company_image) {
-      newErrors.student_company_image = "Company image is required";
-      isValid = false;
-    }
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error("Please fix the errors in the form");
-      return;
-    }
-
-    const formDataObj = new FormData();
-
-    formDataObj.append("student_company_name", formData.student_company_name);
-    formDataObj.append(
-      "student_company_image_alt",
-      formData.student_company_image_alt
-    );
-    if (formData.student_company_image instanceof File) {
-      formDataObj.append(
-        "student_company_image",
-        formData.student_company_image
-      );
-    }
-    try {
-      const res = await trigger({
-        url: COMPANY_API.create,
-        method: "post",
-        data: formDataObj,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      if (res?.code === 201) {
-        toast.success(res?.msg || "Company created successfully");
-        setFormData({
-          student_company_name: "",
-          student_company_image_alt: "",
-        });
-        setErrors({});
-        const fileInput = document.getElementById("student_company_image");
-        if (fileInput) fileInput.value = "";
-        queryClient.invalidateQueries(["company-list"]);
-        navigate("/company-list");
-      } else {
-        toast.error(res?.msg || "Failed to create company");
-      }
-    } catch (error) {
-      const errors = error?.response?.data?.msg;
-      toast.error(errors);
-    }
-  };
-
   return (
-    <div className="max-w-full mx-auto">
-      <PageHeader
-        icon={Building2}
-        title="Add New Company"
-        description="Fill in the details below to create a new company"
-        rightContent={
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => navigate(-1)}
-            >
-              Back
-            </Button>
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl" aria-describedby={undefined}>
+        <DialogHeader>
+          <DialogTitle>
+            {isEdit ? "Edit Company" : "Create Company"}
+          </DialogTitle>
+        </DialogHeader>
 
-            <Button
-              type="submit"
-              form="create-company-form"
-              className="px-8"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                "Create Company"
+        <div className="grid grid-cols-1  gap-4">
+          <div>
+            <Label>Company Name *</Label>
+            <Input
+              name="student_company_name"
+              value={formData.student_company_name}
+              onChange={handleChange}
+            />
+            <div className="flex justify-between">
+              {errors.student_company_name && (
+                <p className="text-sm text-red-500">
+                  {errors.student_company_name}
+                </p>
               )}
-            </Button>
+            </div>
           </div>
-        }
-      />
-      <Card className="mt-2">
-        <CardContent className="p-4">
-          <form
-            onSubmit={handleSubmit}
-            id="create-company-form"
-            className="grid grid-cols-1 md:grid-cols-2 gap-2"
-          >
-            <div className="space-y-2">
-              <Label
-                htmlFor="student_company_name"
-                className="text-sm font-medium"
-              >
-                Company Name *
-              </Label>
-              <Input
-                id="student_company_name"
-                name="student_company_name"
-                placeholder="Enter company name"
-                value={formData.student_company_name}
-                onChange={handleInputChange}
-                className={errors.student_company_name ? "border-red-500" : ""}
-              />
-              <div className="flex justify-between">
-                {errors.student_company_name && (
-                  <p className="text-sm text-red-500">
-                    {errors.student_company_name}
-                  </p>
-                )}
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label
-                htmlFor="student_company_image_alt"
-                className="text-sm font-medium"
-              >
-                Image Alt Text *
-              </Label>
-              <Textarea
-                id="student_company_image_alt"
-                name="student_company_image_alt"
-                placeholder="Describe the company image for accessibility"
-                value={formData.student_company_image_alt}
-                onChange={handleInputChange}
-                className={
-                  errors.student_company_image_alt ? "border-red-500" : ""
-                }
-              />
-              <div className="flex justify-between">
-                {errors.student_company_image_alt && (
-                  <p className="text-sm text-red-500">
-                    {errors.student_company_image_alt}
-                  </p>
-                )}
-              </div>
+          <div>
+            <Label>Image Alt *</Label>
+            <Textarea
+              name="student_company_image_alt"
+              value={formData.student_company_image_alt}
+              onChange={handleChange}
+            />
+            <div className="flex justify-between">
+              {errors.student_company_image_alt && (
+                <p className="text-sm text-red-500">
+                  {errors.student_company_image_alt}
+                </p>
+              )}
             </div>
+          </div>
 
-            <div className="space-y-2 col-span-2">
-              <ImageUpload
-                id="student_company_image"
-                label="Company Image"
-                required
-                selectedFile={formData.student_company_image}
-                previewImage={preview.student_company_image}
-                onFileChange={(e) =>
-                  handleImageChange(
-                    "student_company_image",
-                    e.target.files?.[0]
-                  )
+          <div>
+            <ImageUpload
+              id="student_company_image"
+              label="Company Image"
+              previewImage={preview.student_company_image}
+              onFileChange={(e) =>
+                handleImageChange("student_company_image", e.target.files?.[0])
+              }
+              onRemove={() => handleRemoveImage("student_company_image")}
+              error={errors.student_company_image}
+              format="WEBP"
+              maxSize={5}
+              allowedExtensions={["webp"]}
+              requiredDimensions={[150, 150]}
+            />
+          </div>
+          {isEdit && (
+            <div>
+              <Label>Status</Label>
+              <GroupButton
+                value={formData.student_company_status}
+                onChange={(v) =>
+                  setFormData((p) => ({
+                    ...p,
+                    student_company_status: v,
+                  }))
                 }
-                onRemove={() => handleRemoveImage("student_company_image")}
-                error={errors.student_company_image}
-                format="WEBP"
-                allowedExtensions={["webp"]}
-                dimensions="150x150"
-                maxSize={5}
-                requiredDimensions={[150, 150]}
+                options={[
+                  { label: "Active", value: "Active" },
+                  { label: "Inactive", value: "Inactive" },
+                ]}
               />
             </div>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+          )}
+        </div>
+
+        <div className="flex justify-end gap-2 pt-4">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isEdit ? "Update" : "Create"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default CreateCompany;
+export default CompanyDialog;

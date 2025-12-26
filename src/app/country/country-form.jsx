@@ -11,6 +11,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { COUNTRY_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/use-mutation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -21,12 +22,13 @@ const initialState = {
   country_status: "Active",
 };
 
-const CountryForm = ({ isOpen, onClose, countryId, refetch }) => {
+const CountryForm = ({ isOpen, onClose, countryId }) => {
   const isEditMode = Boolean(countryId);
   const [data, setData] = useState(initialState);
   const [errors, setErrors] = useState({});
   const { trigger: fetchCountry, loading } = useApiMutation();
   const { trigger: submitCountry, loading: submitLoading } = useApiMutation();
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -92,7 +94,9 @@ const CountryForm = ({ isOpen, onClose, countryId, refetch }) => {
       ) {
         toast.success(res?.msg || "Saved successfully");
         onClose();
-        refetch();
+
+        queryClient.invalidateQueries({ queryKey: ["company-list"] });
+        queryClient.invalidateQueries({ queryKey: ["countries-dropdown"] });
       } else {
         toast.error(res?.msg || "Failed to update country");
       }

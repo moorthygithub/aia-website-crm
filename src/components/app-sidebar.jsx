@@ -21,10 +21,8 @@ import {
   Image,
   LayoutGrid,
   Mail,
-  Package,
   Settings,
   Settings2,
-  ShoppingBag,
   Users,
   Youtube,
 } from "lucide-react";
@@ -101,208 +99,10 @@ const NAVIGATION_CONFIG = {
     },
   },
 
-  MODULES: {
-    CHAPTER: {
-      title: "Chapter",
-      url: "/chapter",
-      icon: Frame,
-      isActive: false,
-    },
-
-    MASTER_SETTINGS: {
-      title: "Master Settings",
-      url: "#",
-      isActive: false,
-      icon: Settings2,
-      items: [
-        {
-          title: "Chapters",
-          url: "/master/chapter",
-        },
-        {
-          title: "Viewer",
-          url: "/master/viewer",
-        },
-        {
-          title: "Sign Up",
-          url: "/master/signup",
-        },
-      ],
-    },
-
-    MEMBERSHIP: {
-      title: "MemberShip",
-      url: "#",
-      isActive: false,
-      icon: ShoppingBag,
-      items: [
-        {
-          title: "Dashboard",
-          url: "/membership/dashboard",
-        },
-        {
-          title: "Active Membership",
-          url: "/membership/active",
-        },
-        {
-          title: "InActive Membership",
-          url: "/membership/inactive",
-        },
-      ],
-    },
-
-    DONOR: {
-      title: "Donor",
-      url: "#",
-      isActive: false,
-      icon: Package,
-      items: [
-        {
-          title: "Donor List",
-          url: "/donor/donors",
-        },
-        {
-          title: "Duplicate",
-          url: "/donor/duplicate",
-        },
-      ],
-    },
-
-    RECEIPT: {
-      title: "Receipt",
-      url: "/receipt",
-      isActive: false,
-      icon: Package,
-    },
-
-    SCHOOL: {
-      title: "School",
-      url: "#",
-      isActive: false,
-      icon: Package,
-      items: [
-        {
-          title: "School List",
-          url: "/school/list",
-        },
-        {
-          title: "School To Allot",
-          url: "/school/to-allot",
-        },
-        {
-          title: "School Alloted",
-          url: "/school/alloted",
-        },
-        {
-          title: "Repeated Donor",
-          url: "/school/repeated",
-        },
-      ],
-    },
-  },
-
   REPORTS: {
-    SUMMARY: {
-      title: "Summary",
-      url: "#",
-      isActive: false,
-      icon: Settings2,
-      items: [
-        {
-          title: "Donor",
-          url: "/report/donor-summary",
-        },
-        {
-          title: "Promoter",
-          url: "/report/promoter-summary",
-        },
-        {
-          title: "Receipt",
-          url: "/report/receipt-summary",
-        },
-        {
-          title: "Donation",
-          url: "/report/donation-summary",
-        },
-        {
-          title: "School",
-          url: "/report/school-summary",
-        },
-        {
-          title: "10DB Statement",
-          url: "/report/10db-statement-summary",
-        },
-        {
-          title: "Suspense",
-          url: "/report/suspense-summary",
-        },
-      ],
-    },
-
-    DOWNLOADS: {
-      title: "Downloads",
-      url: "/download",
-      icon: Blocks,
-      isActive: false,
-    },
-
-    OTHER: {
-      title: "Other",
-      url: "#",
-      isActive: false,
-      icon: Package,
-      items: [
-        {
-          title: "Faq",
-          url: "/other/faq",
-        },
-        {
-          title: "Team",
-          url: "/other/team",
-        },
-        {
-          title: "Notification",
-          url: "/other/notification",
-        },
-      ],
-    },
-
     SETTINGS: {
       title: "Settings",
       url: "/settings",
-      icon: Blocks,
-      isActive: false,
-    },
-    FOLDER: {
-      title: "Folder",
-      url: "/folder",
-      icon: Blocks,
-      isActive: false,
-    },
-    MULTIALLOTMENT: {
-      title: "Multi-Allotment",
-      url: "/multi-allotment",
-      icon: Blocks,
-      isActive: false,
-    },
-
-    RECEIPT_ZERO: {
-      title: "Recepit-S",
-      url: "/recepit/zero-list",
-      icon: Blocks,
-      isActive: false,
-    },
-
-    RECEIPT_CHANGE_DONOR: {
-      title: "C-Recepit-Donor",
-      url: "/recepit/change-donor",
-      icon: Blocks,
-      isActive: false,
-    },
-
-    RECEIPT_MULTIPLE: {
-      title: "M-Recepit",
-      url: "/recepit/multiple-list",
       icon: Blocks,
       isActive: false,
     },
@@ -312,17 +112,17 @@ const NAVIGATION_CONFIG = {
 const USER_ROLE_PERMISSIONS = {
   1: {
     navMain: [
-      "POPUPLIST",
-      "BANNERLIST",
+      // "POPUPLIST",
+      // "BANNERLIST",
       "COMPANYLIST",
       "COUNTRYLIST",
-      "LETUREYOUTUBELIST",
+      // "LETUREYOUTUBELIST",
       "STUDENTLIST",
-      "NEWSLETTERLIST",
-      "FAQLIST",
-      "GALLERYLIST",
+      // "NEWSLETTERLIST",
+      // "FAQLIST",
+      // "GALLERYLIST",
       "BLOGLIST",
-      "SETTINGS",
+      // "SETTINGS",
     ],
     navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
   },

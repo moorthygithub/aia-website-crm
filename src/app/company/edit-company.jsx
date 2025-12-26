@@ -102,12 +102,7 @@ const EditCompany = () => {
     }
   };
 
-  const handleStatusChange = (checked) => {
-    setFormData((prev) => ({
-      ...prev,
-      student_company_status: checked ? "Active" : "Inactive",
-    }));
-  };
+
 
   const validateForm = () => {
     const newErrors = {};

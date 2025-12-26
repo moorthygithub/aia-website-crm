@@ -37,7 +37,6 @@ const DataTable = ({
   columns = [],
   pageSize = 10,
   searchPlaceholder = "Search...",
-  extraContent,
   addButton,
 }) => {
   const [globalFilter, setGlobalFilter] = useState("");
@@ -131,7 +130,6 @@ const DataTable = ({
               </Button>
             ))}
 
-          {/* {extraContent} */}
         </div>
       </div>
 

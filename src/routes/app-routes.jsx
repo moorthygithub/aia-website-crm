@@ -5,8 +5,8 @@ import EditBanner from "@/app/banner/edit-banner";
 import BlogList from "@/app/blog/blog-list";
 import CreateBlog from "@/app/blog/create-blog";
 import CompanyList from "@/app/company/company-list";
-import CreateCompany from "@/app/company/create-company";
-import EditCompany from "@/app/company/edit-company";
+// import CreateCompany from "@/app/company/create-company";
+// import EditCompany from "@/app/company/edit-company";
 import CountryList from "@/app/country/country";
 import NotFound from "@/app/errors/not-found";
 import CreateFaq from "@/app/faq/create-faq";
@@ -153,7 +153,7 @@ function AppRoutes() {
               </Suspense>
             }
           />
-          <Route
+          {/* <Route
             path="/add-company"
             element={
               <Suspense fallback={<LoadingBar />}>
@@ -168,7 +168,7 @@ function AppRoutes() {
                 <EditCompany />
               </Suspense>
             }
-          />
+          /> */}
           <Route
             path="/faq-list"
             element={

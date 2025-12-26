@@ -1,13 +1,15 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import DataTable from "@/components/common/data-table";
 import ImageCell from "@/components/common/ImageCell";
 import LoadingBar from "@/components/loader/loading-bar";
-import ApiErrorPage from "@/components/api-error/api-error";
 import { COMPANY_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 import { Edit } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import CompanyDialog from "./create-company";
 
 const CompanyList = () => {
   const {
@@ -19,7 +21,8 @@ const CompanyList = () => {
     url: COMPANY_API.list,
     queryKey: ["company-list"],
   });
-
+  const [open, setOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
   const IMAGE_FOR = "Student Company";
   const companyBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
@@ -69,19 +72,26 @@ const CompanyList = () => {
       accessorKey: "actions",
       cell: ({ row }) => (
         <div>
-          <Link
-            title="company edit"
-            to={`/edit-company/${row.original.id}`}
-            className="cursor-pointer"
+          <Button
+            size="icon"
+            variant="outline"
+            onClick={() => {
+              setEditId(row.original.id);
+              setOpen(true);
+            }}
           >
-            <Edit className=" h-4 w-4 hover:text-blue-600" />
-          </Link>
+            <Edit className="h-4 w-4" />
+          </Button>
         </div>
       ),
     },
   ];
   if (isLoading) return <LoadingBar />;
   if (isError) return <ApiErrorPage onRetry={refetch} />;
+  const handleCreate = () => {
+    setEditId(null);
+    setOpen(true);
+  };
   return (
     <>
       <DataTable
@@ -90,9 +100,15 @@ const CompanyList = () => {
         pageSize={10}
         searchPlaceholder="Search companies..."
         addButton={{
-          to: "/add-company",
+          onClick: handleCreate,
           label: "Add Company",
         }}
+      />
+
+      <CompanyDialog
+        open={open}
+        onClose={() => setOpen(false)}
+        companyId={editId}
       />
     </>
   );
