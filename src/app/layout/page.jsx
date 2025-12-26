@@ -8,15 +8,10 @@ import {
 
 import { useNavigate } from "react-router-dom";
 
-
-
 import { Breadcrumbs } from "@/components/new/breadcrumbs";
-
 
 export default function Page({ children }) {
   const navigate = useNavigate();
-
-
 
   const handleBackClick = (e) => {
     e.preventDefault();
@@ -24,7 +19,6 @@ export default function Page({ children }) {
   };
   return (
     <SidebarProvider>
- 
       <div className="hidden md:block">
         <AppSidebar />
       </div>
@@ -40,7 +34,6 @@ export default function Page({ children }) {
 
             <Breadcrumbs onBack={handleBackClick} />
           </div>
-        
         </header>
 
         <main className="flex flex-1 flex-col gap-4  pt-0 ">
@@ -54,8 +47,6 @@ export default function Page({ children }) {
             <span>Crafted with ❤️ by AG Solutions</span>
           </div>
         </footer>
-
-       
       </SidebarInset>
     </SidebarProvider>
   );

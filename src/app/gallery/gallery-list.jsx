@@ -34,6 +34,7 @@ import { toast } from "sonner";
 import GalleryCreate from "./gallery-create";
 import { useSelector } from "react-redux";
 import { getAuthToken } from "@/utils/authToken";
+import GalleryEdit from "./gallery-edit";
 
 const GalleryList = () => {
   const [copiedId, setCopiedId] = useState(false);
@@ -132,7 +133,8 @@ const GalleryList = () => {
       cell: ({ row }) => {
         const first_url = row.original.gallery_url;
         const second_url = row.original.gallery_image;
-        const fullUrl = first_url + second_url;
+        const fullUrl = first_url + second_url + `?t=${Date.now()}`;
+      
         const id = row.original.id;
         return (
           <div className="text-xs ">
@@ -222,6 +224,22 @@ const GalleryList = () => {
       },
       size: 120,
     },
+   
+{
+  header: "Actions",
+  accessorKey: "actions",
+  cell: ({ row }) => {
+    const galleryId = row.original.id;
+    return (
+      <div className="flex items-center gap-2">
+        <GalleryEdit 
+          galleryId={galleryId} 
+          
+        />
+      </div>
+    );
+  },
+},
   ];
 
   const table = useReactTable({

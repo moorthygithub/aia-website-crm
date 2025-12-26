@@ -1,4 +1,4 @@
-import Page from "@/app/dashboard/page";
+import Page from "@/app/layout/page";
 import DashboardSkeleton from "@/components/skeleton-loader/dashboard-skeleton";
 import useAuth from "@/hooks/api/use-auth";
 import { Navigate, Outlet } from "react-router-dom";

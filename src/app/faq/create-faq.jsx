@@ -1,4 +1,6 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
+import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -200,7 +202,6 @@ const CreateFaq = () => {
       })),
     };
 
-    const loadingToast = toast.loading("Creating FAQs...");
     try {
       const res = await trigger({
         url: FAQ_API.create,
@@ -209,7 +210,6 @@ const CreateFaq = () => {
       });
 
       if (res?.code === 201) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "FAQs created successfully");
 
         setFaqItems([
@@ -226,12 +226,9 @@ const CreateFaq = () => {
         queryClient.invalidateQueries(["faq-list"]);
         navigate("/faq-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to create FAQs");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
-
       const errors = error?.response?.data?.msg;
       toast.error(errors || "Something went wrong");
 
@@ -240,22 +237,11 @@ const CreateFaq = () => {
   };
 
   if (isPageLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   if (isPageError) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500">Error loading page data</p>
-        <Button onClick={refetchPage} variant="outline" className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
+    return <ApiErrorPage onRetry={() => refetchPage()} />;
   }
 
   return (

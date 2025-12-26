@@ -269,7 +269,7 @@ const StudentForm = () => {
   if (fetchError)
     return (
       <ApiErrorPage
-        onRetry={() => fetchStudent({ url: STUDENT_API.byId(id) })}
+        onRetry={() => fetchData()}
       />
     );
 

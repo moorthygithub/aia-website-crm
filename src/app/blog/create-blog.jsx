@@ -1,38 +1,45 @@
-import React, { useState } from "react";
+import ApiErrorPage from "@/components/api-error/api-error";
+import BlogPreview from "@/components/blog-preview/blog-preview";
+import MemoizedSelect from "@/components/common/memoized-select";
+import PageHeader from "@/components/common/page-header";
+import LoadingBar from "@/components/loader/loading-bar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
 import {
-  Loader2,
-  User,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Eye,
-  EyeOff,
-  Type,
-  Image as ImageIcon,
-  Calendar,
-  BookOpen,
-  AlertCircle,
-  ExternalLink,
-} from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { BLOG_API, GALLERY_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { BLOG_API, GALLERY_API } from "@/constants/apiConstants";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import ReactSelect from "react-select";
-import BlogPreview from "@/components/blog-preview/blog-preview";
 import { CKEditor } from "ckeditor4-react";
-import PageHeader from "@/components/common/page-header";
+import {
+  AlertCircle,
+  BookOpen,
+  Calendar,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Loader2,
+  Plus,
+  Trash2,
+  Type,
+  User
+} from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const CreateBlog = () => {
   const { trigger, loading: isSubmitting } = useApiMutation();
@@ -58,7 +65,7 @@ const CreateBlog = () => {
 
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
-
+  console.log(selectedRelatedBlogs, "selectedRelatedBlogs");
   const [errors, setErrors] = useState({});
   const [subErrors, setSubErrors] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
@@ -107,6 +114,7 @@ const CreateBlog = () => {
       setSelectedGalleryImage(option);
 
       // Copy URL to clipboard
+
       try {
         await navigator.clipboard.writeText(option.value);
         toast.success(`Image URL copied: ${option.image}`);
@@ -340,7 +348,6 @@ const CreateBlog = () => {
       formDataObj.append(`related[${index}][blog_related_id]`, blog.value);
     });
 
-    const loadingToast = toast.loading("Creating blog...");
     try {
       const res = await trigger({
         url: BLOG_API.create,
@@ -352,16 +359,13 @@ const CreateBlog = () => {
       });
 
       if (res?.code === 201) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Blog created successfully");
         queryClient.invalidateQueries(["blog-list"]);
         navigate("/blog-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to create blog");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
       toast.error(error?.response?.data?.msg || "Something went wrong");
     }
   };
@@ -577,10 +581,6 @@ const CreateBlog = () => {
                       <Label className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4" />
                         <span>Short Description *</span>{" "}
-                        <span>
-                          {formData.blog_short_description.length}/500
-                          characters
-                        </span>
                       </Label>
                       <Textarea
                         name="blog_short_description"
@@ -782,37 +782,7 @@ const CreateBlog = () => {
                       <CardContent className="px-3 py-1">
                         <div className="flex justify-between items-center mb-1">
                           <h4 className="font-medium">Section {index + 1}</h4>
-                          <div className="space-y-2 md:col-span-2">
-                            <ReactSelect
-                              options={galleryOptions}
-                              value={selectedGalleryImage}
-                              onChange={handleGalleryImageSelect}
-                              placeholder="Select an image - URL will be auto-copied"
-                              className="react-select-container"
-                              classNamePrefix="react-select"
-                              styles={customSelectStyles}
-                              formatOptionLabel={(option) => (
-                                <div className="flex items-center gap-2">
-                                  <div className="w-4 h-4 rounded overflow-hidden flex-shrink-0">
-                                    <img
-                                      src={option.value}
-                                      alt={option.label}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                  <span>{option.label}</span>
-                                </div>
-                              )}
-                              noOptionsMessage={() => "No gallery images found"}
-                            />
 
-                            {selectedGalleryImage && (
-                              <div className="mt-2 text-xs text-gray-500">
-                                Selected: {selectedGalleryImage.image} - URL
-                                copied to clipboard
-                              </div>
-                            )}
-                          </div>
                           <Button
                             type="button"
                             variant="ghost"
@@ -850,18 +820,6 @@ const CreateBlog = () => {
                             )}
                           </div>
 
-                          {/* <div className="space-y-1">
-                            <Label>Sub-description *</Label>
-                            <Textarea
-                              placeholder="Enter detailed content for this section"
-                              value={sub.blog_sub_description}
-                              onChange={(e) => handleSubInputChange(index, 'blog_sub_description', e.target.value)}
-                              className={`min-h-[120px] ${subErrors[index]?.blog_sub_description ? 'border-red-500' : ''}`}
-                            />
-                            {subErrors[index]?.blog_sub_description && (
-                              <p className="text-sm text-red-500">{subErrors[index].blog_sub_description}</p>
-                            )}
-                          </div> */}
                           <div className="space-y-1">
                             <Label>Sub-description *</Label>
                             <div
@@ -942,16 +900,47 @@ const CreateBlog = () => {
                       </CardContent>
                     </Card>
                   ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addNewSub}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Section
-                  </Button>
+                  <div className=" flex flex-row items-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addNewSub}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Section
+                    </Button>
+                    <Select
+                      value={selectedGalleryImage?.value}
+                      onValueChange={(value) => {
+                        const option = galleryOptions.find(
+                          (opt) => opt.value === value
+                        );
+                        handleGalleryImageSelect(option);
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an image URL " />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {galleryOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            <div className="flex items-center gap-2">
+                              <div className=" rounded overflow-hidden flex-shrink-0">
+                                <img
+                                  src={option.value}
+                                  alt={option.label}
+                                  className="w-8 h-8 object-cover"
+                                />
+                              </div>
+                              <span>{option.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="related" className="space-y-4">
@@ -965,34 +954,18 @@ const CreateBlog = () => {
                     </p>
 
                     {isLoadingBlogs ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                        <span className="ml-2 text-sm text-gray-500">
-                          Loading blogs...
-                        </span>
-                      </div>
+                      <LoadingBar />
                     ) : isErrorBlogs ? (
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                          Failed to load blogs. Please try again.
-                        </AlertDescription>
-                      </Alert>
+                      <ApiErrorPage onRetry={() => refetchBlogs()} />
                     ) : (
                       <>
-                        <ReactSelect
+                        <MemoizedSelect
                           isMulti
                           options={blogOptions}
                           value={selectedRelatedBlogs}
                           onChange={setSelectedRelatedBlogs}
                           placeholder="Search and select related blogs..."
-                          isLoading={isLoadingBlogs}
-                          className="react-select-container"
-                          classNamePrefix="react-select"
-                          styles={customSelectStyles}
-                          noOptionsMessage={() => "No blogs found"}
                         />
-
                         {selectedRelatedBlogs.length > 0 && (
                           <div className="mt-4 space-y-2">
                             <Label className="text-sm font-medium">

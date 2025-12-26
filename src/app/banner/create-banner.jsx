@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { BANNER_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Image, Loader2, Upload, X } from "lucide-react";
+import { Image, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -114,7 +114,6 @@ const CreateBanner = () => {
     if (formData.banner_image instanceof File) {
       formDataObj.append("banner_image", formData.banner_image);
     }
-    const loadingToast = toast.loading("Creating banner...");
     try {
       const res = await trigger({
         url: BANNER_API.create,
@@ -126,7 +125,6 @@ const CreateBanner = () => {
       });
       console.log("res", res);
       if (res?.code === 201) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Banner created successfully");
 
         setFormData({
@@ -143,11 +141,9 @@ const CreateBanner = () => {
 
         navigate("/banner-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to create banner");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
 
       const errors = error?.response?.data?.msg;
 

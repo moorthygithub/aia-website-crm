@@ -1,5 +1,7 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
 import { GroupButton } from "@/components/group-button";
+import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -96,13 +98,6 @@ const EditFaq = () => {
     }
   };
 
-  const handleStatusChange = (checked) => {
-    setFormData((prev) => ({
-      ...prev,
-      faq_status: checked ? "Active" : "Inactive",
-    }));
-  };
-
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -156,7 +151,6 @@ const EditFaq = () => {
     formDataObj.append("faq_ans", formData.faq_ans);
     formDataObj.append("faq_status", formData.faq_status);
 
-    const loadingToast = toast.loading("Updating FAQ...");
     try {
       const res = await trigger({
         url: FAQ_API.updateById(id),
@@ -165,19 +159,15 @@ const EditFaq = () => {
       });
 
       if (res?.code === 200) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "FAQ updated successfully");
 
         queryClient.invalidateQueries(["faq-list"]);
         queryClient.invalidateQueries(["faq-edit", id]);
         navigate("/faq-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to update FAQ");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
-
       const errors = error?.response?.data?.msg;
       toast.error(errors || "Something went wrong");
 
@@ -201,28 +191,17 @@ const EditFaq = () => {
   };
 
   if (isLoading || isPageLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   if (isError || isPageError) {
     return (
-      <div className="text-center py-10">
-        <p className="text-red-500">Error loading data</p>
-        <Button
-          onClick={() => {
-            refetch();
-            refetchPage();
-          }}
-          variant="outline"
-          className="mt-4"
-        >
-          Retry
-        </Button>
-      </div>
+      <ApiErrorPage
+        onRetry={() => {
+          refetch();
+          refetchPage();
+        }}
+      />
     );
   }
 

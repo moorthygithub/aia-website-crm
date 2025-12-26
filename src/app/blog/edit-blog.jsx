@@ -1,36 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Loader2,
-  User,
-  ArrowLeft,
-  Plus,
-  Trash2,
-  Eye,
-  EyeOff,
-  Type,
-  Image as ImageIcon,
-  Calendar,
-  BookOpen,
-  AlertCircle,
-  ExternalLink,
-} from "lucide-react";
-import { useApiMutation } from "@/hooks/useApiMutation";
-import { useGetApiMutation } from "@/hooks/useGetApiMutation";
-import { toast } from "sonner";
-import { useNavigate, useParams } from "react-router-dom";
-import { useQueryClient } from "@tanstack/react-query";
-import { BLOG_API } from "@/constants/apiConstants";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import Select from "react-select";
+import ApiErrorPage from "@/components/api-error/api-error";
 import BlogPreview from "@/components/blog-preview/blog-preview";
+import MemoizedSelect from "@/components/common/memoized-select";
+import PageHeader from "@/components/common/page-header";
+import { GroupButton } from "@/components/group-button";
+import LoadingBar from "@/components/loader/loading-bar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,8 +15,43 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { BLOG_API, GALLERY_API } from "@/constants/apiConstants";
+import { useApiMutation } from "@/hooks/useApiMutation";
+import { useGetApiMutation } from "@/hooks/useGetApiMutation";
+import { useQueryClient } from "@tanstack/react-query";
 import { CKEditor } from "ckeditor4-react";
-import PageHeader from "@/components/common/page-header";
+import {
+  AlertCircle,
+  ArrowLeft,
+  BookOpen,
+  Calendar,
+  Eye,
+  EyeOff,
+  Image as ImageIcon,
+  Loader2,
+  Plus,
+  Trash2,
+  Type,
+  User,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import Select from "react-select";
+import { toast } from "sonner";
 
 const EditBlog = () => {
   const { id } = useParams();
@@ -74,7 +83,6 @@ const EditBlog = () => {
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
   const [existingSubIds, setExistingSubIds] = useState([]);
   const [existingRelatedIds, setExistingRelatedIds] = useState([]);
-
   const [errors, setErrors] = useState({});
   const [subErrors, setSubErrors] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
@@ -83,7 +91,7 @@ const EditBlog = () => {
     width: 0,
     height: 0,
   });
-
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const {
     data: blogData,
     isLoading,
@@ -117,6 +125,36 @@ const EditBlog = () => {
     );
   }, [blogDropdownData?.data, id]);
 
+  const {
+    data: galleryData,
+    isLoading: isLoadingGallery,
+    isError: isErrorGallery,
+    refetch: refetchGallery,
+  } = useGetApiMutation({
+    url: GALLERY_API.dropdown,
+    queryKey: ["gallery-list"],
+  });
+
+  const galleryOptions =
+    galleryData?.data?.map((item, index) => ({
+      value: `${item.gallery_url}${item.gallery_image}`,
+      label: `Image ${index + 1}`,
+      image: item.gallery_image,
+    })) || [];
+  const handleGalleryImageSelect = async (option) => {
+    if (option) {
+      setSelectedGalleryImage(option);
+
+      try {
+        await navigator.clipboard.writeText(option.value);
+        toast.success(`Image URL copied: ${option.image}`);
+      } catch (error) {
+        toast.error("Failed to copy URL");
+      }
+    } else {
+      setSelectedGalleryImage(null);
+    }
+  };
   useEffect(() => {
     if (blogData?.data) {
       const data = blogData.data;
@@ -159,6 +197,23 @@ const EditBlog = () => {
       setSelectedRelatedBlogs([]);
       setExistingRelatedIds([]);
     }
+    if (blogData?.data.web_blog_subs?.length) {
+      const subs = blogData.data.web_blog_subs.map((sub) => ({
+        id: sub.id,
+        blog_sub_heading: sub.blog_sub_heading || "",
+        blog_sub_description: sub.blog_sub_description || "",
+      }));
+      setBlogSubs(subs);
+      setExistingSubIds(subs.map((sub) => sub.id));
+      setSubErrors(Array(subs.length).fill({}));
+    } else {
+      setBlogSubs([{ blog_sub_heading: "", blog_sub_description: "" }]);
+      setSubErrors([{}]);
+    }
+
+    // Initialize empty related blogs array
+    setSelectedRelatedBlogs([]);
+    setExistingRelatedIds([]);
   }, [blogData]);
   useEffect(() => {
     if (blogData?.data?.web_blog_relateds?.length && blogOptions.length > 0) {
@@ -464,7 +519,6 @@ const EditBlog = () => {
       formDataObj.append(`related[${index}][blog_related_id]`, blog.value);
     });
 
-    const loadingToast = toast.loading("Updating blog...");
     try {
       const res = await trigger({
         url: BLOG_API.updateById(id),
@@ -476,16 +530,13 @@ const EditBlog = () => {
       });
 
       if (res?.code === 200) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Blog updated successfully");
         queryClient.invalidateQueries(["blog-list"]);
         navigate("/blog-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to update blog");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
       toast.error(error?.response?.data?.msg || "Something went wrong");
     }
   };
@@ -550,117 +601,9 @@ const EditBlog = () => {
     if (fileInput) fileInput.value = "";
   };
 
-  const customSelectStyles = {
-    control: (base, state) => ({
-      ...base,
-      minHeight: "40px",
-      borderColor: state.isFocused ? "hsl(var(--ring))" : "hsl(var(--input))",
-      backgroundColor: "hsl(var(--background))",
-      "&:hover": {
-        borderColor: "hsl(var(--ring))",
-      },
-      boxShadow: state.isFocused ? "0 0 0 1px hsl(var(--ring))" : "none",
-      borderRadius: "calc(var(--radius) - 2px)",
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: "hsl(var(--popover))",
-      border: "1px solid hsl(var(--border))",
-      borderRadius: "calc(var(--radius) - 2px)",
-      boxShadow: "var(--shadow-md)",
-      zIndex: 50,
-    }),
-    menuList: (base) => ({
-      ...base,
-      padding: "4px",
-      maxHeight: "200px",
-    }),
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected
-        ? "hsl(var(--accent))"
-        : state.isFocused
-        ? "hsl(var(--accent))"
-        : "transparent",
-      color: state.isSelected
-        ? "hsl(var(--accent-foreground))"
-        : "hsl(var(--foreground))",
-      borderRadius: "calc(var(--radius) - 4px)",
-      padding: "8px 12px",
-      fontSize: "14px",
-      cursor: "pointer",
-      "&:active": {
-        backgroundColor: "hsl(var(--accent))",
-      },
-    }),
-    multiValue: (base) => ({
-      ...base,
-      backgroundColor: "hsl(var(--accent))",
-      borderRadius: "calc(var(--radius) - 2px)",
-    }),
-    multiValueLabel: (base) => ({
-      ...base,
-      color: "hsl(var(--accent-foreground))",
-      fontSize: "13px",
-      padding: "2px 6px",
-    }),
-    multiValueRemove: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      borderRadius: "0 calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0",
-      "&:hover": {
-        backgroundColor: "hsl(var(--destructive))",
-        color: "hsl(var(--destructive-foreground))",
-      },
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      fontSize: "14px",
-    }),
-    input: (base) => ({
-      ...base,
-      color: "hsl(var(--foreground))",
-      fontSize: "14px",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: "hsl(var(--foreground))",
-      fontSize: "14px",
-    }),
-    indicatorSeparator: (base) => ({
-      ...base,
-      backgroundColor: "hsl(var(--border))",
-    }),
-    dropdownIndicator: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      "&:hover": {
-        color: "hsl(var(--foreground))",
-      },
-    }),
-    clearIndicator: (base) => ({
-      ...base,
-      color: "hsl(var(--muted-foreground))",
-      "&:hover": {
-        color: "hsl(var(--destructive))",
-      },
-    }),
-  };
+  if (isLoading) return <LoadingBar />;
 
-  if (isLoading)
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  if (isError)
-    return (
-      <div className="text-center py-8">
-        Error loading blog data. <Button onClick={refetch}>Retry</Button>
-      </div>
-    );
-
+  if (isError) return <ApiErrorPage onRetry={() => refetch()} />;
   return (
     <div className="max-w-full mx-auto">
       <PageHeader
@@ -752,10 +695,6 @@ const EditBlog = () => {
                       <Label className="flex items-center gap-2">
                         <BookOpen className="h-4 w-4" />
                         <span>Short Description *</span>{" "}
-                        <span>
-                          {formData.blog_short_description.length}/500
-                          characters
-                        </span>
                       </Label>
                       <Textarea
                         name="blog_short_description"
@@ -863,20 +802,24 @@ const EditBlog = () => {
                         )}
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2">
-                          <BookOpen className="h-4 w-4" />
-                          Status *
-                        </Label>
-                        <select
-                          name="blog_status"
-                          value={formData.blog_status}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border rounded-md"
-                        >
-                          <option value="Active">Active</option>
-                          <option value="Inactive">Inactive</option>
-                        </select>
+                      <div className="flex items-center h-full ml-4">
+                        <div className="flex flex-col gap-1.5">
+                          <label className="text-sm font-medium">
+                            Status *
+                          </label>
+
+                          <GroupButton
+                            className="w-fit"
+                            value={formData.blog_status}
+                            onChange={(value) =>
+                              setFormData({ ...formData, blog_status: value })
+                            }
+                            options={[
+                              { label: "Active", value: "Active" },
+                              { label: "Inactive", value: "Inactive" },
+                            ]}
+                          />
+                        </div>
                       </div>
                     </div>
                     <div className="space-y-2">
@@ -989,6 +932,7 @@ const EditBlog = () => {
                               </Badge>
                             )}
                           </h4>
+
                           <Button
                             type="button"
                             variant="ghost"
@@ -1026,18 +970,6 @@ const EditBlog = () => {
                             )}
                           </div>
 
-                          {/* <div className="space-y-1">
-                            <Label>Sub-description *</Label>
-                            <Textarea
-                              placeholder="Enter detailed content for this section"
-                              value={sub.blog_sub_description}
-                              onChange={(e) => handleSubInputChange(index, 'blog_sub_description', e.target.value)}
-                              className={`min-h-[120px] ${subErrors[index]?.blog_sub_description ? 'border-red-500' : ''}`}
-                            />
-                            {subErrors[index]?.blog_sub_description && (
-                              <p className="text-sm text-red-500">{subErrors[index].blog_sub_description}</p>
-                            )}
-                          </div> */}
                           <div className="space-y-1">
                             <Label>Sub-description *</Label>
                             <div
@@ -1118,16 +1050,48 @@ const EditBlog = () => {
                       </CardContent>
                     </Card>
                   ))}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addNewSub}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Section
-                  </Button>
+                  <div className=" flex flex-row items-center gap-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={addNewSub}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Section
+                    </Button>
+
+                    <Select
+                      value={selectedGalleryImage?.value}
+                      onValueChange={(value) => {
+                        const option = galleryOptions.find(
+                          (opt) => opt.value === value
+                        );
+                        handleGalleryImageSelect(option);
+                      }}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select an image URL " />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {galleryOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            <div className="flex items-center gap-2">
+                              <div className=" rounded overflow-hidden flex-shrink-0">
+                                <img
+                                  src={option.value}
+                                  alt={option.label}
+                                  className="w-8 h-8 object-cover"
+                                />
+                              </div>
+                              <span>{option.label}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </TabsContent>
 
                 <TabsContent value="related" className="space-y-4">
@@ -1141,34 +1105,18 @@ const EditBlog = () => {
                     </p>
 
                     {isLoadingBlogs ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                        <span className="ml-2 text-sm text-gray-500">
-                          Loading blogs...
-                        </span>
-                      </div>
+                      <LoadingBar />
                     ) : isErrorBlogs ? (
-                      <Alert variant="destructive">
-                        <AlertCircle className="h-4 w-4" />
-                        <AlertDescription>
-                          Failed to load blogs. Please try again.
-                        </AlertDescription>
-                      </Alert>
+                      <ApiErrorPage onRetry={() => refetchBlogs()} />
                     ) : (
                       <>
-                        <Select
+                        <MemoizedSelect
                           isMulti
                           options={blogOptions}
                           value={selectedRelatedBlogs}
                           onChange={setSelectedRelatedBlogs}
                           placeholder="Search and select related blogs..."
-                          isLoading={isLoadingBlogs}
-                          className="react-select-container"
-                          classNamePrefix="react-select"
-                          styles={customSelectStyles}
-                          noOptionsMessage={() => "No blogs found"}
                         />
-
                         {selectedRelatedBlogs.length > 0 && (
                           <div className="mt-4 space-y-2">
                             <Label className="text-sm font-medium">

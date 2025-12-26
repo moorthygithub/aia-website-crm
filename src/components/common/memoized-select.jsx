@@ -1,91 +1,227 @@
-import { ChevronsUpDown } from "lucide-react";
+// File: components/ui/MemoizedSelect.jsx
 import React from "react";
 import ReactSelect from "react-select";
 
 export const MemoizedSelect = React.memo(
-  ({ value, onChange, options, placeholder }) => {
-    const selectOptions = options.map((option) => ({
-      value: option.value,
-      label: option.label,
-    }));
+  ({
+    value,
+    onChange,
+    options,
+    placeholder,
+    isMulti = false,
+    isLoading = false,
+    noOptionsMessage,
+    className,
+    classNamePrefix,
+    ...props
+  }) => {
+    const selectOptions = options.map((option) => {
+      // Handle different object structures
+      if (option?.label && option?.value !== undefined) {
+        return {
+          value: option.value,
+          label: option.label,
+          ...option, // Keep all original properties
+        };
+      }
+      // Fallback for simple arrays or strings
+      return {
+        value: option.value || option,
+        label: option.label || option,
+      };
+    });
 
+    // Handle both single and multi-select
+    const selectedOption = isMulti
+      ? Array.isArray(value)
+        ? value.map((v) => {
+            // Handle if value is an object (with value property) or just the value itself
+            const valueToFind = v?.value !== undefined ? v.value : v;
+            const found = selectOptions.find(
+              (opt) => opt.value === valueToFind
+            );
+            // If not found in options, return the object as is
+            return found || v;
+          })
+        : []
+      : value && value !== "" && value !== null
+      ? (() => {
+          // Handle if value is an object (with value property) or just the value itself
+          const valueToFind = value?.value !== undefined ? value.value : value;
+          const found = selectOptions.find(
+            (option) => option.value === valueToFind
+          );
+          // If not found in options, return the object as is
+          return found || value;
+        })()
+      : null;
 
-    const selectedOption =
-      value !== "" && value !== null
-        ? selectOptions.find((option) => option.value === value)
-        : null;
-
-    const customStyles = {
-      control: (provided, state) => ({
-        ...provided,
-        minHeight: "36px",
-        borderRadius: "6px",
-        borderColor: state.isFocused ? "black" : "#e5e7eb",
-        boxShadow: state.isFocused ? "black" : "none",
+    const customSelectStyles = {
+      control: (base, state) => ({
+        ...base,
+        minHeight: "40px",
+        borderColor: state.isFocused ? "hsl(var(--ring))" : "hsl(var(--input))",
+        backgroundColor: "hsl(var(--background))",
         "&:hover": {
-          borderColor: "none",
-          cursor: "text",
+          borderColor: "hsl(var(--ring))",
         },
+        boxShadow: state.isFocused ? "0 0 0 1px hsl(var(--ring))" : "none",
+        borderRadius: "calc(var(--radius) - 2px)",
+        cursor: "pointer",
+        transition: "all 0.2s",
       }),
-      option: (provided, state) => ({
-        ...provided,
-        fontSize: "14px",
+      menu: (base) => ({
+        ...base,
+        backgroundColor: "hsl(var(--popover))",
+        border: "1px solid hsl(var(--border))",
+        borderRadius: "calc(var(--radius) - 2px)",
+        boxShadow: "var(--shadow-md)",
+        zIndex: 50,
+        marginTop: "4px",
+      }),
+      menuList: (base) => ({
+        ...base,
+        padding: "4px",
+        maxHeight: "200px",
+      }),
+      option: (base, state) => ({
+        ...base,
         backgroundColor: state.isSelected
-          ? "#A5D6A7"
+          ? "hsl(var(--accent))"
           : state.isFocused
-          ? "#f3f4f6"
-          : "white",
-        color: state.isSelected ? "black" : "#1f2937",
-        "&:hover": {
-          backgroundColor: "#EEEEEE",
-          color: "black",
+          ? "hsl(var(--accent))"
+          : "transparent",
+        color: state.isSelected
+          ? "hsl(var(--accent-foreground))"
+          : "hsl(var(--foreground))",
+        borderRadius: "calc(var(--radius) - 4px)",
+        padding: "8px 12px",
+        fontSize: "14px",
+        cursor: "pointer",
+        transition: "all 0.15s",
+        "&:active": {
+          backgroundColor: "hsl(var(--accent))",
         },
       }),
-
-      menu: (provided) => ({
-        ...provided,
-        borderRadius: "6px",
-        border: "1px solid #e5e7eb",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-      }),
-      placeholder: (provided) => ({
-        ...provided,
-        color: "#616161",
-        fontSize: "14px",
+      multiValue: (base) => ({
+        ...base,
+        backgroundColor: "hsl(var(--accent))",
+        borderRadius: "calc(var(--radius) - 2px)",
         display: "flex",
-        flexDirection: "row",
-        alignItems: "start",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
+        gap: "2px",
       }),
-      singleValue: (provided) => ({
-        ...provided,
-        color: "black",
+      multiValueLabel: (base) => ({
+        ...base,
+        color: "hsl(var(--accent-foreground))",
+        fontSize: "13px",
+        padding: "2px 6px",
+      }),
+      multiValueRemove: (base) => ({
+        ...base,
+        color: "hsl(var(--muted-foreground))",
+        borderRadius: "0 calc(var(--radius) - 3px) calc(var(--radius) - 3px) 0",
+        cursor: "pointer",
+        "&:hover": {
+          backgroundColor: "hsl(var(--destructive))",
+          color: "hsl(var(--destructive-foreground))",
+        },
+      }),
+      placeholder: (base) => ({
+        ...base,
+        color: "hsl(var(--muted-foreground))",
         fontSize: "14px",
       }),
-    };
-
-    const DropdownIndicator = (props) => {
-      return (
-        <div {...props.innerProps}>
-          <ChevronsUpDown className="h-4 w-4 mr-3 text-gray-500" />
-        </div>
-      );
+      input: (base) => ({
+        ...base,
+        color: "hsl(var(--foreground))",
+        fontSize: "14px",
+      }),
+      singleValue: (base) => ({
+        ...base,
+        color: "hsl(var(--foreground))",
+        fontSize: "14px",
+      }),
+      indicatorSeparator: (base) => ({
+        ...base,
+        backgroundColor: "hsl(var(--border))",
+      }),
+      dropdownIndicator: (base) => ({
+        ...base,
+        color: "hsl(var(--muted-foreground))",
+        padding: "8px",
+        "&:hover": {
+          color: "hsl(var(--foreground))",
+        },
+      }),
+      clearIndicator: (base) => ({
+        ...base,
+        color: "hsl(var(--muted-foreground))",
+        padding: "8px",
+        "&:hover": {
+          color: "hsl(var(--destructive))",
+        },
+      }),
+      loadingIndicator: (base) => ({
+        ...base,
+        color: "hsl(var(--muted-foreground))",
+      }),
     };
 
     return (
       <ReactSelect
         value={selectedOption}
-        onChange={(selected) => onChange(selected ? selected.value : "")}
+        onChange={(selected) => {
+          if (isMulti) {
+            const selectedValues = Array.isArray(selected)
+              ? selected.map((s) => ({
+                  value: s.value,
+                  label: s.label,
+                  ...s,
+                }))
+              : [];
+            onChange(selectedValues);
+          } else {
+            if (selected) {
+              onChange({
+                value: selected.value,
+                label: selected.label,
+                ...selected,
+              });
+            } else {
+              onChange(null);
+            }
+          }
+        }}
         options={selectOptions}
-        placeholder={placeholder}
-        styles={customStyles}
+        placeholder={placeholder || "Select..."}
+        isMulti={isMulti}
+        isLoading={isLoading}
+        styles={customSelectStyles}
         components={{
           IndicatorSeparator: () => null,
-          DropdownIndicator,
         }}
+        noOptionsMessage={
+          noOptionsMessage
+            ? () => noOptionsMessage
+            : () => "No options available"
+        }
+        className={className}
+        classNamePrefix={classNamePrefix}
+        isClearable
+        {...props}
       />
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      JSON.stringify(prevProps.value) === JSON.stringify(nextProps.value) &&
+      JSON.stringify(prevProps.options) === JSON.stringify(nextProps.options) &&
+      prevProps.isLoading === nextProps.isLoading &&
+      prevProps.isMulti === nextProps.isMulti
     );
   }
 );
+
+MemoizedSelect.displayName = "MemoizedSelect";
+
+export default MemoizedSelect;

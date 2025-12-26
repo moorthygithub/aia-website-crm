@@ -1,6 +1,8 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
 import { GroupButton } from "@/components/group-button";
 import ImageUpload from "@/components/image-upload/image-upload";
+import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -120,7 +122,7 @@ const EditCompany = () => {
       newErrors.student_company_image_alt = "Image alt text is required";
       isValid = false;
     }
-    if (!previewImage && !selectedFile) {
+    if (!preview.student_company_image && !formData.student_company_image) {
       newErrors.student_company_image = "Company image is required";
       isValid = false;
     }
@@ -149,11 +151,12 @@ const EditCompany = () => {
       formData.student_company_status
     );
 
-    if (selectedFile) {
-      formDataObj.append("student_company_image", selectedFile);
+    if (formData.student_company_image instanceof File) {
+      formDataObj.append(
+        "student_company_image",
+        formData.student_company_image
+      );
     }
-
-    const loadingToast = toast.loading("Updating company...");
     try {
       const res = await trigger({
         url: COMPANY_API.updateById(id),
@@ -165,18 +168,14 @@ const EditCompany = () => {
       });
 
       if (res?.code === 200) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Company updated successfully");
         queryClient.invalidateQueries(["company-list"]);
         queryClient.invalidateQueries(["company-edit", id]);
         navigate("/company-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to update company");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
-
       const errors = error?.response?.data?.msg;
       toast.error(errors || "Something went wrong");
 
@@ -185,22 +184,11 @@ const EditCompany = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
+    return <LoadingBar />;
   }
 
   if (isError) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500">Error loading company data</p>
-        <Button onClick={refetch} variant="outline" className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
+    return <ApiErrorPage onRetry={() => refetch()} />;
   }
 
   return (

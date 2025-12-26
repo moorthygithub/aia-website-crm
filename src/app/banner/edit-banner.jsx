@@ -1,6 +1,8 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
 import { GroupButton } from "@/components/group-button";
 import ImageUpload from "@/components/image-upload/image-upload";
+import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -163,7 +165,6 @@ const EditBanner = () => {
       formDataObj.append("banner_image", formData.banner_image);
     }
 
-    const loadingToast = toast.loading("Updating banner...");
     try {
       const res = await trigger({
         url: BANNER_API.updateById(id),
@@ -175,18 +176,15 @@ const EditBanner = () => {
       });
 
       if (res?.code === 200) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Banner updated successfully");
 
         queryClient.invalidateQueries(["banner-list"]);
         queryClient.invalidateQueries(["banner-edit", id]);
         navigate("/banner-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to update banner");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
 
       const errors = error?.response?.data?.msg;
       toast.error(errors || "Something went wrong");
@@ -195,27 +193,11 @@ const EditBanner = () => {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className="text-center py-10">
-        <p className="text-red-500">Error loading banner data</p>
-        <Button onClick={refetch} variant="outline" className="mt-4">
-          Retry
-        </Button>
-      </div>
-    );
-  }
-
+  if (isError) return <ApiErrorPage onRetry={refetch} />;
   return (
     <div className="max-w-full mx-auto">
+      {isLoading && <LoadingBar />}
+
       <PageHeader
         icon={Image}
         title="Edit Banner"

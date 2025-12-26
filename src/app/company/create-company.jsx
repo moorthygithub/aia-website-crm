@@ -98,7 +98,6 @@ const CreateCompany = () => {
         formData.student_company_image
       );
     }
-    const loadingToast = toast.loading("Creating company...");
     try {
       const res = await trigger({
         url: COMPANY_API.create,
@@ -110,26 +109,20 @@ const CreateCompany = () => {
       });
 
       if (res?.code === 201) {
-        toast.dismiss(loadingToast);
         toast.success(res?.msg || "Company created successfully");
-
         setFormData({
           student_company_name: "",
           student_company_image_alt: "",
         });
         setErrors({});
-
         const fileInput = document.getElementById("student_company_image");
         if (fileInput) fileInput.value = "";
         queryClient.invalidateQueries(["company-list"]);
         navigate("/company-list");
       } else {
-        toast.dismiss(loadingToast);
         toast.error(res?.msg || "Failed to create company");
       }
     } catch (error) {
-      toast.dismiss(loadingToast);
-
       const errors = error?.response?.data?.msg;
       toast.error(errors);
     }

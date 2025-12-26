@@ -103,7 +103,7 @@ const CountryForm = ({ isOpen, onClose, countryId, refetch }) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>
             {isEditMode ? "Edit Country" : "Create Country"}
