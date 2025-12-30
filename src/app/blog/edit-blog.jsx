@@ -310,8 +310,8 @@ const EditBlog = () => {
     reader.onload = () => {
       const img = new window.Image();
       img.onload = () => {
-        if (img.width !== 1400 || img.height !== 450) {
-          newErrors.push("The image size must be exactly 1400×450 pixels.");
+        if (img.width !== 1200 || img.height !== 628) {
+          newErrors.push("The image size must be exactly 1200×628 pixels.");
         }
 
         setImageDimensions({ width: img.width, height: img.height });
@@ -451,9 +451,9 @@ const EditBlog = () => {
       isValid = false;
     } else if (
       selectedFile &&
-      (imageDimensions.width !== 1400 || imageDimensions.height !== 450)
+      (imageDimensions.width !== 1200 || imageDimensions.height !== 628)
     ) {
-      newErrors.blog_images = `Image dimensions must be exactly 1400×450 pixels. Current: ${imageDimensions.width}×${imageDimensions.height}`;
+      newErrors.blog_images = `Image dimensions must be exactly 1200×628 pixels. Current: ${imageDimensions.width}×${imageDimensions.height}`;
       isValid = false;
     }
 
@@ -863,13 +863,13 @@ const EditBlog = () => {
 
                       <Alert className="py-2 px-3 bg-blue-50 border-blue-200">
                         <AlertDescription className="text-xs text-blue-700">
-                          WEBP • 1400×450 • Max 5MB
+                          WEBP • 1200×628 • Max 5MB
                         </AlertDescription>
                       </Alert>
 
                       {previewImage || selectedFile ? (
                         <div className="border border-dashed rounded-md p-3">
-                          <div className="relative aspect-[1400/450] bg-gray-100 rounded overflow-hidden">
+                          <div className="relative aspect-[1200/628] bg-gray-100 rounded overflow-hidden">
                             <img
                               src={previewImage}
                               alt="Preview"
@@ -905,8 +905,8 @@ const EditBlog = () => {
                             {imageDimensions.width > 0 && (
                               <p
                                 className={
-                                  imageDimensions.width === 1400 &&
-                                  imageDimensions.height === 450
+                                  imageDimensions.width === 1200 &&
+                                  imageDimensions.height === 628
                                     ? "text-green-600"
                                     : "text-red-600"
                                 }
@@ -1256,7 +1256,7 @@ const EditBlog = () => {
 
                 <div className="space-y-4">
                   <div className="border rounded-lg overflow-hidden shadow-sm">
-                    <div className="relative aspect-[1400/450] bg-gray-100 overflow-hidden">
+                    <div className="relative aspect-[1200/628] bg-gray-100 overflow-hidden">
                       {previewImage ? (
                         <img
                           src={previewImage}
@@ -1264,13 +1264,13 @@ const EditBlog = () => {
                           className="w-full h-full object-cover"
                           style={{
                             objectFit:
-                              imageDimensions.width === 1400 &&
-                              imageDimensions.height === 450
+                              imageDimensions.width === 1200 &&
+                              imageDimensions.height === 628
                                 ? "cover"
                                 : "contain",
                             backgroundColor:
-                              imageDimensions.width === 1400 &&
-                              imageDimensions.height === 450
+                              imageDimensions.width === 1200 &&
+                              imageDimensions.height === 628
                                 ? "transparent"
                                 : "#f3f4f6",
                           }}
@@ -1279,7 +1279,7 @@ const EditBlog = () => {
                         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200">
                           <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
                           <p className="text-sm text-gray-500">
-                            1400×450 pixels
+                            1200×628 pixels
                           </p>
                         </div>
                       )}
@@ -1298,8 +1298,8 @@ const EditBlog = () => {
                           <Badge
                             variant="outline"
                             className={`text-xs ${
-                              imageDimensions.width === 1400 &&
-                              imageDimensions.height === 450
+                              imageDimensions.width === 1200 &&
+                              imageDimensions.height === 628
                                 ? "bg-green-50 text-green-700 border-green-200"
                                 : "bg-red-50 text-red-700 border-red-200"
                             }`}
@@ -1357,30 +1357,30 @@ const EditBlog = () => {
                   {previewImage && selectedFile && (
                     <Alert
                       className={`${
-                        imageDimensions.width === 1400 &&
-                        imageDimensions.height === 450
+                        imageDimensions.width === 1200 &&
+                        imageDimensions.height === 628
                           ? "bg-green-50 border-green-200"
                           : "bg-yellow-50 border-yellow-200"
                       }`}
                     >
                       <AlertCircle
                         className={`h-4 w-4 ${
-                          imageDimensions.width === 1400 &&
-                          imageDimensions.height === 450
+                          imageDimensions.width === 1200 &&
+                          imageDimensions.height === 628
                             ? "text-green-600"
                             : "text-yellow-600"
                         }`}
                       />
                       <AlertDescription className="text-sm">
-                        {imageDimensions.width === 1400 &&
-                        imageDimensions.height === 450 ? (
+                        {imageDimensions.width === 1200 &&
+                        imageDimensions.height === 628 ? (
                           <span className="text-green-700">
-                            ✓ Image dimensions are correct (1400×450)
+                            ✓ Image dimensions are correct (1200×628)
                           </span>
                         ) : (
                           <span className="text-yellow-700">
                             ⚠ Current: {imageDimensions.width}×
-                            {imageDimensions.height}. Required: 1400×450
+                            {imageDimensions.height}. Required: 1200×628
                           </span>
                         )}
                       </AlertDescription>
@@ -1447,8 +1447,8 @@ const EditBlog = () => {
                     </div>
                     <div
                       className={`p-3 rounded-lg ${
-                        imageDimensions.width === 1400 &&
-                        imageDimensions.height === 450
+                        imageDimensions.width === 1200 &&
+                        imageDimensions.height === 628
                           ? "bg-green-50"
                           : previewImage
                           ? "bg-yellow-50"
@@ -1456,8 +1456,8 @@ const EditBlog = () => {
                       }`}
                     >
                       <p className="text-2xl font-bold text-gray-900">
-                        {imageDimensions.width === 1400 &&
-                        imageDimensions.height === 450
+                        {imageDimensions.width === 1200 &&
+                        imageDimensions.height === 628
                           ? "✓"
                           : previewImage
                           ? "⚠"
