@@ -162,10 +162,6 @@ const CreateFaq = () => {
         isValid = false;
       }
 
-      if (!item.faq_heading.trim()) {
-        itemErrors.faq_heading = "Heading is required";
-        isValid = false;
-      }
 
       if (!item.faq_que.trim()) {
         itemErrors.faq_que = "Question is required";
@@ -379,7 +375,7 @@ const CreateFaq = () => {
                         htmlFor={`faq_heading_${index}`}
                         className="text-sm font-medium  "
                       >
-                        <span> Heading * </span>
+                        <span> Heading </span>
                         <span className="text-sm text-gray-500"></span>
                       </Label>
                       <Input

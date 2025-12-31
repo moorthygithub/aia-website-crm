@@ -72,9 +72,13 @@ const EditBlog = () => {
     queryKey: ["courses-dropdown"],
   });
   const [formData, setFormData] = useState({
+    blog_meta_title: "",
+    blog_meta_description: "",
+    blog_meta_keywords: "",
     blog_heading: "",
     blog_short_description: "",
     blog_course: "",
+    blog_index: "no",
     blog_created: new Date().toISOString().split("T")[0],
     blog_images_alt: "",
     blog_slug: "",
@@ -166,7 +170,11 @@ const EditBlog = () => {
           ?.image_url || "";
 
       setFormData({
+        blog_meta_title: data.blog_meta_title || "",
+        blog_meta_description: data.blog_meta_description || "",
         blog_heading: data.blog_heading || "",
+        blog_meta_keywords: data.blog_meta_keywords || "",
+        blog_index: data.blog_index || "",
         blog_short_description: data.blog_short_description || "",
         blog_course: data.blog_course || "",
         blog_created:
@@ -186,13 +194,20 @@ const EditBlog = () => {
         const subs = data.web_blog_subs.map((sub) => ({
           id: sub.id,
           blog_sub_heading: sub.blog_sub_heading || "",
+          blog_sub_heading_tag: sub.blog_sub_heading_tag || "",
           blog_sub_description: sub.blog_sub_description || "",
         }));
         setBlogSubs(subs);
         setExistingSubIds(subs.map((sub) => sub.id));
         setSubErrors(Array(subs.length).fill({}));
       } else {
-        setBlogSubs([{ blog_sub_heading: "", blog_sub_description: "" }]);
+        setBlogSubs([
+          {
+            blog_sub_heading: "",
+            blog_sub_description: "",
+            blog_sub_heading_tag: "",
+          },
+        ]);
         setSubErrors([{}]);
       }
 
@@ -200,23 +215,29 @@ const EditBlog = () => {
       setSelectedRelatedBlogs([]);
       setExistingRelatedIds([]);
     }
-    if (blogData?.data.web_blog_subs?.length) {
-      const subs = blogData.data.web_blog_subs.map((sub) => ({
-        id: sub.id,
-        blog_sub_heading: sub.blog_sub_heading || "",
-        blog_sub_description: sub.blog_sub_description || "",
-      }));
-      setBlogSubs(subs);
-      setExistingSubIds(subs.map((sub) => sub.id));
-      setSubErrors(Array(subs.length).fill({}));
-    } else {
-      setBlogSubs([{ blog_sub_heading: "", blog_sub_description: "" }]);
-      setSubErrors([{}]);
-    }
+    // if (blogData?.data.web_blog_subs?.length) {
+    //   const subs = blogData.data.web_blog_subs.map((sub) => ({
+    //     id: sub.id,
+    //     blog_sub_heading: sub.blog_sub_heading || "",
+    //     blog_sub_description: sub.blog_sub_description || "",
+    //   }));
+    //   setBlogSubs(subs);
+    //   setExistingSubIds(subs.map((sub) => sub.id));
+    //   setSubErrors(Array(subs.length).fill({}));
+    // } else {
+    //   setBlogSubs([
+    //     {
+    //       blog_sub_heading: "",
+    //       blog_sub_description: "",
+    //       blog_sub_heading_tag: "",
+    //     },
+    //   ]);
+    //   setSubErrors([{}]);
+    // }
 
-    // Initialize empty related blogs array
-    setSelectedRelatedBlogs([]);
-    setExistingRelatedIds([]);
+    // // Initialize empty related blogs array
+    // setSelectedRelatedBlogs([]);
+    // setExistingRelatedIds([]);
   }, [blogData]);
   useEffect(() => {
     if (blogData?.data?.web_blog_relateds?.length && blogOptions.length > 0) {
@@ -268,6 +289,7 @@ const EditBlog = () => {
       ...blogSubs,
       {
         blog_sub_heading: "",
+        blog_sub_heading_tag: "",
         blog_sub_description: "",
       },
     ]);
@@ -411,7 +433,14 @@ const EditBlog = () => {
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
-
+    if (!formData.blog_meta_title.trim()) {
+      newErrors.blog_meta_title = "Meta Title is required";
+      isValid = false;
+    }
+    if (!formData.blog_meta_description.trim()) {
+      newErrors.blog_meta_description = "Meta Description is required";
+      isValid = false;
+    }
     if (!formData.blog_heading.trim()) {
       newErrors.blog_heading = "Blog heading is required";
       isValid = false;
@@ -485,6 +514,12 @@ const EditBlog = () => {
 
     const formDataObj = new FormData();
     formDataObj.append("blog_slug", formData.blog_slug);
+    formDataObj.append("blog_meta_title", formData.blog_meta_title);
+    formDataObj.append("blog_meta_description", formData.blog_meta_description);
+    formDataObj.append("blog_meta_keywords", formData.blog_meta_keywords);
+    formDataObj.append("blog_index", formData.blog_index);
+
+    formDataObj.append("blog_slug", formData.blog_slug);
     formDataObj.append("blog_heading", formData.blog_heading);
     formDataObj.append(
       "blog_short_description",
@@ -508,6 +543,10 @@ const EditBlog = () => {
       formDataObj.append(
         `sub[${index}][blog_sub_heading]`,
         sub.blog_sub_heading
+      );
+      formDataObj.append(
+        `sub[${index}][blog_sub_heading_tag]`,
+        sub.blog_sub_heading_tag
       );
       formDataObj.append(
         `sub[${index}][blog_sub_description]`,
@@ -573,6 +612,7 @@ const EditBlog = () => {
       if (data.web_blog_subs?.length) {
         const subs = data.web_blog_subs.map((sub) => ({
           id: sub.id,
+          blog_sub_heading_tag: sub.blog_sub_heading_tag || "",
           blog_sub_heading: sub.blog_sub_heading || "",
           blog_sub_description: sub.blog_sub_description || "",
         }));
@@ -604,11 +644,10 @@ const EditBlog = () => {
     if (fileInput) fileInput.value = "";
   };
 
-  if (isLoading) return <LoadingBar />;
-
   if (isError) return <ApiErrorPage onRetry={() => refetch()} />;
   return (
     <div className="max-w-full mx-auto">
+      {isLoading && <LoadingBar />}
       <PageHeader
         icon={User}
         title=" Edit Blog"
@@ -696,6 +735,66 @@ const EditBlog = () => {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Type className="h-4 w-4" />
+                        Meta Title*
+                      </Label>
+                      <Textarea
+                        name="blog_meta_title"
+                        placeholder="Enter mata title"
+                        value={formData.blog_meta_title}
+                        onChange={handleInputChange}
+                        className={`min-h-[100px] ${
+                          errors.blog_meta_title ? "border-red-500" : ""
+                        }`}
+                      />
+                      {errors.blog_meta_title && (
+                        <p className="text-sm text-red-500">
+                          {errors.blog_meta_title}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span>Meta Description *</span>{" "}
+                      </Label>
+                      <Textarea
+                        name="blog_meta_description"
+                        placeholder="Enter a brief meta description of your blog"
+                        value={formData.blog_meta_description}
+                        onChange={handleInputChange}
+                        className={`min-h-[100px] ${
+                          errors.blog_meta_description ? "border-red-500" : ""
+                        }`}
+                      />
+                      <div className="flex justify-between">
+                        {errors.blog_meta_description ? (
+                          <p className="text-sm text-red-500">
+                            {errors.blog_meta_description}
+                          </p>
+                        ) : (
+                          <p className="text-sm text-gray-500"></p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label className="flex items-center gap-2">
+                        <BookOpen className="h-4 w-4" />
+                        <span>Meta Keywords</span>{" "}
+                      </Label>
+                      <Textarea
+                        name="blog_meta_keywords"
+                        placeholder="Enter a meta Keywords"
+                        value={formData.blog_meta_keywords}
+                        onChange={handleInputChange}
+                        className={`min-h-[100px] ${
+                          errors.blog_meta_keywords ? "border-red-500" : ""
+                        }`}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Type className="h-4 w-4" />
                         Blog Heading *
                       </Label>
                       <Textarea
@@ -737,7 +836,7 @@ const EditBlog = () => {
                         )}
                       </div>
                     </div>
-                    <div className="space-y-2 md:col-span-2 ">
+                    <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Type className="h-4 w-4" />
                         Blog Slug *
@@ -758,6 +857,24 @@ const EditBlog = () => {
                         Auto-generates from heading, but you can edit it
                         directly
                       </p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        BLog Index
+                      </Label>
+
+                      <GroupButton
+                        className="w-fit"
+                        value={formData.blog_index}
+                        onChange={(value) =>
+                          setFormData({ ...formData, blog_index: value })
+                        }
+                        options={[
+                          { label: "Yes", value: "yes" },
+                          { label: "No", value: "no" },
+                        ]}
+                      />
                     </div>
                     <div className="flex flex-col gap-2">
                       <div className="space-y-2">
@@ -978,31 +1095,69 @@ const EditBlog = () => {
                         </div>
 
                         <div>
-                          <div className="space-y-1">
-                            <Label>Sub-heading *</Label>
-                            <Input
-                              placeholder="Enter sub-heading"
-                              value={sub.blog_sub_heading}
-                              onChange={(e) =>
-                                handleSubInputChange(
-                                  index,
-                                  "blog_sub_heading",
-                                  e.target.value
-                                )
-                              }
-                              className={
-                                subErrors[index]?.blog_sub_heading
-                                  ? "border-red-500"
-                                  : ""
-                              }
-                            />
-                            {subErrors[index]?.blog_sub_heading && (
-                              <p className="text-sm text-red-500">
-                                {subErrors[index].blog_sub_heading}
-                              </p>
-                            )}
-                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label>Sub-heading *</Label>
+                              <Input
+                                placeholder="Enter sub-heading"
+                                value={sub.blog_sub_heading}
+                                onChange={(e) =>
+                                  handleSubInputChange(
+                                    index,
+                                    "blog_sub_heading",
+                                    e.target.value
+                                  )
+                                }
+                                className={
+                                  subErrors[index]?.blog_sub_heading
+                                    ? "border-red-500"
+                                    : ""
+                                }
+                              />
+                              {subErrors[index]?.blog_sub_heading && (
+                                <p className="text-sm text-red-500">
+                                  {subErrors[index].blog_sub_heading}
+                                </p>
+                              )}
+                            </div>
+                            <div className="space-y-1">
+                              <Label>Sub-heading Tag *</Label>
+                              <Select
+                                value={sub.blog_sub_heading_tag}
+                                onValueChange={(value) =>
+                                  handleSubInputChange(
+                                    index,
+                                    "blog_sub_heading_tag",
+                                    value
+                                  )
+                                }
+                              >
+                                <SelectTrigger
+                                  className={
+                                    subErrors[index]?.blog_sub_heading_tag
+                                      ? "border-red-500"
+                                      : ""
+                                  }
+                                >
+                                  <SelectValue placeholder="Select heading tag" />
+                                </SelectTrigger>
 
+                                <SelectContent>
+                                  <SelectItem value="h1">H1</SelectItem>
+                                  <SelectItem value="h2">H2</SelectItem>
+                                  <SelectItem value="h3">H3</SelectItem>
+                                  <SelectItem value="h4">H4</SelectItem>
+                                  <SelectItem value="h5">H5</SelectItem>
+                                  <SelectItem value="h6">H6</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              {subErrors[index]?.blog_sub_heading_tag && (
+                                <p className="text-sm text-red-500">
+                                  {subErrors[index].blog_sub_heading_tag}
+                                </p>
+                              )}
+                            </div>
+                          </div>
                           <div className="space-y-1">
                             <Label>Sub-description *</Label>
                             <div

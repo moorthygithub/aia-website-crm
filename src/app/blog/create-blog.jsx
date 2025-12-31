@@ -37,6 +37,7 @@ import {
   Type,
   User,
 } from "lucide-react";
+import moment from "moment";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -73,7 +74,6 @@ const CreateBlog = () => {
 
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
-  console.log(selectedRelatedBlogs, "selectedRelatedBlogs");
   const [errors, setErrors] = useState({});
   const [subErrors, setSubErrors] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
@@ -519,7 +519,7 @@ const CreateBlog = () => {
                       </Label>
                       <Textarea
                         name="blog_meta_title"
-                        placeholder="Enter blog heading"
+                        placeholder="Enter mata title"
                         value={formData.blog_meta_title}
                         onChange={handleInputChange}
                         className={`min-h-[100px] ${
@@ -640,7 +640,7 @@ const CreateBlog = () => {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Type className="h-4 w-4" />
-                        BLog Index
+                        Blog Index
                       </Label>
 
                       <GroupButton
@@ -1204,7 +1204,13 @@ const CreateBlog = () => {
                       <div className="flex items-center justify-between text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          <span>{formData.blog_created || "Date not set"}</span>
+                          <span>
+                            {formData.blog_created
+                              ? moment(formData.blog_created).format(
+                                  "DD MMM YYYY"
+                                )
+                              : "Date not set"}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <BookOpen className="h-3 w-3" />

@@ -13,7 +13,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
 import { FAQ_API, PAGE_TWO_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
@@ -115,10 +114,7 @@ const EditFaq = () => {
       isValid = false;
     }
 
-    if (!formData.faq_heading.trim()) {
-      newErrors.faq_heading = "Heading is required";
-      isValid = false;
-    }
+
 
     if (!formData.faq_que.trim()) {
       newErrors.faq_que = "Question is required";
@@ -294,7 +290,7 @@ const EditFaq = () => {
                       htmlFor="faq_heading"
                       className="text-sm font-medium"
                     >
-                      <span>Heading * </span>
+                      <span>Heading </span>
                     </Label>
                     <Input
                       id="faq_heading"
