@@ -9,12 +9,14 @@ import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 import { Copy } from "lucide-react";
 import GalleryEdit from "./gallery-edit";
 import { toast } from "sonner";
+import GalleryCreate from "./gallery-create";
 
 const GalleryList = () => {
   const { data, isLoading, isError, refetch } = useGetApiMutation({
     url: GALLERYAPI.gallery,
     queryKey: ["gallery"],
   });
+  const [open, setOpen] = useState(false);
 
   const IMAGE_FOR = "Link Gallery";
   const galleryBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
@@ -76,7 +78,7 @@ const GalleryList = () => {
 
         return (
           <div className="text-xs flex items-center gap-3">
-            <span className="truncate">{fullUrl}</span>
+            <span className="truncate"></span>
             <Copy
               onClick={(e) => {
                 e.preventDefault();
@@ -119,7 +121,9 @@ const GalleryList = () => {
   if (isError) {
     return <ApiErrorPage onRetry={refetch} />;
   }
-
+  const handleCreate = () => {
+    setOpen(true);
+  };
   return (
     <>
       {isLoading && <LoadingBar />}
@@ -129,7 +133,9 @@ const GalleryList = () => {
         columns={columns}
         pageSize={10}
         searchPlaceholder="Search gallery..."
+        extraButton={<GalleryCreate />}
       />
+
     </>
   );
 };

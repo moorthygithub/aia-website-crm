@@ -28,6 +28,7 @@ const CountryList = () => {
 
   const columns = [
     { header: "Country", accessorKey: "country_name" },
+    { header: "City", accessorKey: "country_city" },
     { header: "Latitude", accessorKey: "country_latitude" },
     { header: "Longitude", accessorKey: "country_longitude" },
     {

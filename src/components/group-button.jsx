@@ -19,7 +19,7 @@ export function GroupButton({ options = [], value, onChange, className }) {
             type="button"
             onClick={() => onChange(option.value)}
             className={cn(
-              "relative px-5 py-2.5 border rounded-lg text-sm  font-medium  transition-all duration-300",
+              "relative px-5 py-2 border rounded-lg text-sm  font-medium  transition-all duration-300",
               "transform active:scale-95",
               isActive
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-[1.02] border-primary"

@@ -9,8 +9,7 @@ import CompanyList from "@/app/company/company-list";
 // import EditCompany from "@/app/company/edit-company";
 import CountryList from "@/app/country/country";
 import NotFound from "@/app/errors/not-found";
-import CreateFaq from "@/app/faq/create-faq";
-import EditFaq from "@/app/faq/edit-faq";
+import FaqForm from "@/app/faq/create-faq";
 import FaqList from "@/app/faq/faq-list";
 import GalleryList from "@/app/gallery/gallery-list";
 import LectureYoutubeForm from "@/app/lecture-youtube/lecture-youtube-form";
@@ -64,7 +63,7 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/lecture-youtube"
+            path="/youtube"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <LetureYoutubeList />
@@ -72,7 +71,7 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/lecture-youtube/create"
+            path="/youtube/create"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <LectureYoutubeForm />
@@ -80,7 +79,7 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/lecture-youtube/:id/edit"
+            path="/youtube/:id/edit"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <LectureYoutubeForm />
@@ -165,7 +164,7 @@ function AppRoutes() {
             path="/add-faq"
             element={
               <Suspense fallback={<LoadingBar />}>
-                <CreateFaq />
+                <FaqForm />
               </Suspense>
             }
           />
@@ -173,7 +172,7 @@ function AppRoutes() {
             path="/edit-faq/:id"
             element={
               <Suspense fallback={<LoadingBar />}>
-                <EditFaq />
+                <FaqForm />
               </Suspense>
             }
           />

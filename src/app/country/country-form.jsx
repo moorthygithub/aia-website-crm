@@ -19,6 +19,7 @@ const initialState = {
   country_name: "",
   country_latitude: "",
   country_longitude: "",
+  country_city: "",
   country_status: "Active",
 };
 
@@ -49,6 +50,7 @@ const CountryForm = ({ isOpen, onClose, countryId }) => {
           country_name: res.data.country_name || "",
           country_latitude: res.data.country_latitude || "",
           country_longitude: res.data.country_longitude || "",
+          country_city: res.data.country_city || "",
           country_status: res.data.country_status || "Active",
         });
       } catch (err) {
@@ -65,6 +67,7 @@ const CountryForm = ({ isOpen, onClose, countryId }) => {
     if (!data.country_name.trim()) newErrors.country_name = "Required";
     if (!data.country_latitude) newErrors.country_latitude = "Required";
     if (!data.country_longitude) newErrors.country_longitude = "Required";
+    if (!data.country_city) newErrors.country_city = "Required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -79,6 +82,7 @@ const CountryForm = ({ isOpen, onClose, countryId }) => {
     formData.append("country_name", data.country_name);
     formData.append("country_latitude", data.country_latitude);
     formData.append("country_longitude", data.country_longitude);
+    formData.append("country_city", data.country_city);
     formData.append("country_status", data.country_status);
 
     try {
@@ -128,34 +132,47 @@ const CountryForm = ({ isOpen, onClose, countryId }) => {
             <p className="text-xs text-red-500">{errors.country_name}</p>
           )}
         </div>
-
         <div>
-          <label className="text-sm font-medium">Latitude *</label>
+          <label className="text-sm font-medium">City *</label>
+
           <Input
-            placeholder="Latitude"
-            value={data.country_latitude}
-            onChange={(e) =>
-              setData({ ...data, country_latitude: e.target.value })
-            }
+            placeholder="City"
+            value={data.country_city}
+            onChange={(e) => setData({ ...data, country_city: e.target.value })}
           />
-          {errors.country_latitude && (
-            <p className="text-xs text-red-500">{errors.country_latitude}</p>
+          {errors.country_city && (
+            <p className="text-xs text-red-500">{errors.country_city}</p>
           )}
         </div>
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="text-sm font-medium">Latitude *</label>
+            <Input
+              placeholder="Latitude"
+              value={data.country_latitude}
+              onChange={(e) =>
+                setData({ ...data, country_latitude: e.target.value })
+              }
+            />
+            {errors.country_latitude && (
+              <p className="text-xs text-red-500">{errors.country_latitude}</p>
+            )}
+          </div>
 
-        <div>
-          <label className="text-sm font-medium">Longitude *</label>
+          <div>
+            <label className="text-sm font-medium">Longitude *</label>
 
-          <Input
-            placeholder="Longitude"
-            value={data.country_longitude}
-            onChange={(e) =>
-              setData({ ...data, country_longitude: e.target.value })
-            }
-          />
-          {errors.country_longitude && (
-            <p className="text-xs text-red-500">{errors.country_longitude}</p>
-          )}
+            <Input
+              placeholder="Longitude"
+              value={data.country_longitude}
+              onChange={(e) =>
+                setData({ ...data, country_longitude: e.target.value })
+              }
+            />
+            {errors.country_longitude && (
+              <p className="text-xs text-red-500">{errors.country_longitude}</p>
+            )}
+          </div>
         </div>
 
         {isEditMode && (

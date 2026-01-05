@@ -26,6 +26,8 @@ import PageHeader from "@/components/common/page-header";
 import { Youtube } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import ImageUpload from "@/components/image-upload/image-upload";
+import { Card } from "@/components/ui/card";
+import { GroupButton } from "@/components/group-button";
 
 const initialState = {
   youtube_for: "",
@@ -146,7 +148,7 @@ const LectureYoutubeForm = () => {
         (!isEditMode && res?.code === 201)
       ) {
         toast.success(res?.msg || "Saved successfully");
-        navigate("/lecture-youtube");
+        navigate("/youtube");
         queryClient.invalidateQueries({ queryKey: ["lecture-youtube-list"] });
       } else {
         toast.error(res?.msg || "Failed to update leture");
@@ -180,7 +182,7 @@ const LectureYoutubeForm = () => {
         <PageHeader
           icon={Youtube}
           title={isEditMode ? "Edit YouTube Video" : "Create YouTube Video"}
-          description="Fill in the leture youtube  details below to register them"
+          description="Fill in the  youtube  details below to register them"
           rightContent={
             <div className="flex justify-end gap-2 pt-4">
               <Button
@@ -196,144 +198,152 @@ const LectureYoutubeForm = () => {
             </div>
           }
         />
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          <div>
-            <label className="text-sm font-medium">YouTube For *</label>
-            <Select
-              value={data.youtube_for}
-              onValueChange={(v) => setData({ ...data, youtube_for: v })}
-            >
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select YouTube For" />
-              </SelectTrigger>
-              <SelectContent>
-                {youtubeForData?.data?.map((item, key) => (
-                  <SelectItem key={key} value={item.page_one_url}>
-                    {item.page_one_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.youtube_for && (
-              <p className="text-xs text-red-500 mt-1">{errors.youtube_for}</p>
-            )}
-          </div>
-
-          {/* Sort */}
-          <div>
-            <label className="text-sm font-medium">Sort Order</label>
-            <Input
-              type="number"
-              min={0}
-              className="mt-1"
-              value={data.youtube_sort}
-              onChange={(e) =>
-                setData({ ...data, youtube_sort: e.target.value })
-              }
-            />
-            {errors.youtube_sort && (
-              <p className="text-xs text-red-500 mt-1">{errors.youtube_sort}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="text-sm font-medium">Course</label>
-            <Select
-              value={data.student_course}
-              onValueChange={(v) => setData({ ...data, student_course: v })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select Courses" />
-              </SelectTrigger>
-              <SelectContent>
-                {coursesData?.data?.map((c, key) => (
-                  <SelectItem key={key} value={c.courses_name}>
-                    {c.courses_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Language */}
-          <div>
-            <label className="text-sm font-medium">Language</label>
-            <Input
-              className="mt-1"
-              value={data.youtube_language}
-              onChange={(e) =>
-                setData({ ...data, youtube_language: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="md:col-span-2">
-            <label className="text-sm font-medium">YouTube Link *</label>
-            <Textarea
-              className="mt-1"
-              value={data.youtube_link}
-              onChange={(e) =>
-                setData({ ...data, youtube_link: e.target.value })
-              }
-            />
-            {errors.youtube_link && (
-              <p className="text-xs text-red-500 mt-1">{errors.youtube_link}</p>
-            )}
-          </div>
-          <div className="md:col-span-2">
-            <label className="text-sm font-medium">Image Alt</label>
-            <Textarea
-              className="mt-1"
-              value={data.youtube_image_alt}
-              onChange={(e) =>
-                setData({ ...data, youtube_image_alt: e.target.value })
-              }
-            />
-            {errors.youtube_image_alt && (
-              <p className="text-xs text-red-500 mt-1">
-                {errors.youtube_image_alt}
-              </p>
-            )}
-          </div>
-          <div className="md:col-span-2">
-            <ImageUpload
-              id="youtube_image"
-              label="YouTube Image"
-              required
-              selectedFile={data.youtube_image}
-              previewImage={preview.youtube_image}
-              onFileChange={(e) =>
-                handleImageChange("youtube_image", e.target.files?.[0])
-              }
-              onRemove={() => handleRemoveImage("youtube_image")}
-              error={errors.youtube_image}
-              format="WEBP"
-              allowedExtensions={["webp"]}
-              dimensions="600x300"
-              maxSize={5}
-              requiredDimensions={[600, 300]}
-            />
-          </div>
-
-          {/* Status */}
-          {isEditMode && (
+        <Card className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <div>
-              <label className="text-sm font-medium">Status</label>
+              <label className="text-sm font-medium">YouTube For *</label>
               <Select
-                value={data.youtube_status}
-                onValueChange={(v) => setData({ ...data, youtube_status: v })}
+                value={data.youtube_for}
+                onValueChange={(v) => setData({ ...data, youtube_for: v })}
               >
                 <SelectTrigger className="mt-1">
-                  <SelectValue />
+                  <SelectValue placeholder="Select YouTube For" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Inactive">Inactive</SelectItem>
+                  {youtubeForData?.data?.map((item, key) => (
+                    <SelectItem key={key} value={item.page_one_url}>
+                      {item.page_one_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.youtube_for && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.youtube_for}
+                </p>
+              )}
+            </div>
+
+            {/* Sort */}
+            <div>
+              <label className="text-sm font-medium">Sort Order</label>
+              <Input
+                type="number"
+                min={0}
+                className="mt-1"
+                value={data.youtube_sort}
+                onChange={(e) =>
+                  setData({ ...data, youtube_sort: e.target.value })
+                }
+              />
+              {errors.youtube_sort && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.youtube_sort}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Course</label>
+              <Select
+                value={data.youtube_course}
+                onValueChange={(v) => setData({ ...data, youtube_course: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Courses" />
+                </SelectTrigger>
+                <SelectContent>
+                  {coursesData?.data?.map((c, key) => (
+                    <SelectItem key={key} value={c.courses_name}>
+                      {c.courses_name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
-        </div>
+
+            <div>
+              <label className="text-sm font-medium">Language/PlayList</label>
+              <Input
+                className="mt-1"
+                value={data.youtube_language}
+                onChange={(e) =>
+                  setData({ ...data, youtube_language: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium">YouTube Link *</label>
+              <Textarea
+                className="mt-1"
+                value={data.youtube_link}
+                onChange={(e) =>
+                  setData({ ...data, youtube_link: e.target.value })
+                }
+              />
+              {errors.youtube_link && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.youtube_link}
+                </p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-sm font-medium">Image Alt</label>
+              <Textarea
+                className="mt-1"
+                value={data.youtube_image_alt}
+                onChange={(e) =>
+                  setData({ ...data, youtube_image_alt: e.target.value })
+                }
+              />
+              {errors.youtube_image_alt && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.youtube_image_alt}
+                </p>
+              )}
+            </div>
+            <div className="md:col-span-2">
+              <ImageUpload
+                id="youtube_image"
+                label="YouTube Image"
+                required
+                selectedFile={data.youtube_image}
+                previewImage={preview.youtube_image}
+                onFileChange={(e) =>
+                  handleImageChange("youtube_image", e.target.files?.[0])
+                }
+                onRemove={() => handleRemoveImage("youtube_image")}
+                error={errors.youtube_image}
+                format="WEBP"
+                allowedExtensions={["webp"]}
+                dimensions="600x300"
+                maxSize={5}
+                requiredDimensions={[600, 300]}
+              />
+            </div>
+
+            {isEditMode && (
+              <div className="flex items-center h-full ml-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-medium">Status *</label>
+
+                  <GroupButton
+                    className="w-fit"
+                    value={data.youtube_status}
+                    onChange={(value) =>
+                      setData({ ...data, youtube_status: value })
+                    }
+                    options={[
+                      { label: "Active", value: "Active" },
+                      { label: "Inactive", value: "Inactive" },
+                    ]}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
       </form>
     </div>
   );

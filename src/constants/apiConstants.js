@@ -29,6 +29,8 @@ export const FAQ_API = {
   create: "/faq",
   byId: (id) => `/faq/${id}`,
   updateById: (id) => `/faq/${id}`,
+  deleteFaq: (id) => `/faqSub/${id}`,
+  updateStatus: (id) => `/faqtopStatus/${id}`,
 };
 export const BLOG_API = {
   list: "/blog",

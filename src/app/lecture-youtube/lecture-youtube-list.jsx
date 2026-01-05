@@ -20,7 +20,6 @@ const LetureYoutubeList = () => {
   const imageBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
   const columns = [
-    { header: "ID", accessorKey: "id" },
     {
       header: "Image",
       accessorKey: "youtube_image",
@@ -32,7 +31,7 @@ const LetureYoutubeList = () => {
           <ImageCell
             src={src}
             fallback={noImageUrl}
-            alt="Lecture Youtube Image"
+            alt="Youtube Image"
           />
         );
       },
@@ -68,7 +67,7 @@ const LetureYoutubeList = () => {
         <Button
           size="icon"
           variant="outline"
-          onClick={() => navigate(`/lecture-youtube/${row.original.id}/edit`)}
+          onClick={() => navigate(`/youtube/${row.original.id}/edit`)}
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -86,10 +85,10 @@ const LetureYoutubeList = () => {
         data={data?.data || []}
         columns={columns}
         pageSize={10}
-        searchPlaceholder="Search lecture youtube..."
+        searchPlaceholder="Search  youtube..."
         addButton={{
-          to: "/lecture-youtube/create",
-          label: "Add Lecture Youtube",
+          to: "/youtube/create",
+          label: "Add  Youtube",
         }}
       />
     </>

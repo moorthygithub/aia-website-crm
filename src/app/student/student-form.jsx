@@ -39,9 +39,11 @@ const initialState = {
   student_designation: "",
   student_country_id: "",
   student_company_id: "",
+  student_certificate_issued_by: "",
   student_have_testimonial: "No",
   student_have_certificate: "No",
   student_have_youtube: "No",
+  student_recent_passout: "No",
   student_testimonial: "",
   student_linkedin_link: "",
   student_youtube_link: "",
@@ -50,7 +52,9 @@ const initialState = {
   student_office_image: null,
   student_office_image_alt: "",
   student_certificate_image: null,
-  student_certificate_image_alt: "",
+  student_certificate_image_alt: null,
+  student_other_certificate_image: null,
+  student_other_certificate_image_alt: "",
   student_youtube_image: null,
   student_status: "Active",
   student_youtube_image_alt: "",
@@ -102,6 +106,7 @@ const StudentForm = () => {
         student_image: null,
         student_office_image: null,
         student_certificate_image: null,
+        student_other_certificate_image: null,
         student_youtube_image: null,
       });
 
@@ -114,6 +119,10 @@ const StudentForm = () => {
           ? `${baseUrl}${res.data.student_office_image}`
           : noImageUrl,
 
+        student_other_certificate_image: res?.data
+          ?.student_other_certificate_image
+          ? `${baseUrl}${res.data.student_other_certificate_image}`
+          : noImageUrl,
         student_certificate_image: res?.data?.student_certificate_image
           ? `${baseUrl}${res.data.student_certificate_image}`
           : noImageUrl,
@@ -205,6 +214,10 @@ const StudentForm = () => {
     formData.append("student_country_id", data.student_country_id || "");
     formData.append("student_company_id", data.student_company_id || "");
     formData.append(
+      "student_certificate_issued_by",
+      data.student_certificate_issued_by || ""
+    );
+    formData.append(
       "student_have_testimonial",
       data.student_have_testimonial || ""
     );
@@ -212,6 +225,7 @@ const StudentForm = () => {
       "student_have_certificate",
       data.student_have_certificate || ""
     );
+    formData.append("student_recent_passout", data.student_recent_passout || "");
     formData.append("student_have_youtube", data.student_have_youtube || "");
     formData.append("student_testimonial", data.student_testimonial || "");
     formData.append("student_linkedin_link", data.student_linkedin_link || "");
@@ -221,6 +235,10 @@ const StudentForm = () => {
     formData.append(
       "student_office_image_alt",
       data.student_office_image_alt || ""
+    );
+    formData.append(
+      "student_other_certificate_image_alt",
+      data.student_other_certificate_image_alt
     );
     formData.append(
       "student_certificate_image_alt",
@@ -235,6 +253,11 @@ const StudentForm = () => {
       formData.append("student_image", data.student_image);
     if (data.student_office_image instanceof File)
       formData.append("student_office_image", data.student_office_image);
+    if (data.student_other_certificate_image instanceof File)
+      formData.append(
+        "student_other_certificate_image",
+        data.student_other_certificate_image
+      );
     if (data.student_certificate_image instanceof File)
       formData.append(
         "student_certificate_image",
@@ -459,8 +482,33 @@ const StudentForm = () => {
                 </p>
               )}
             </div>
+            {data?.student_have_certificate == "Yes" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-gray-700">
+                    Certificate Issued By
+                  </label>
+                </div>
 
-            {/* Conditional Toggles */}
+                <Select
+                  value={data.student_certificate_issued_by || ""}
+                  onValueChange={(v) =>
+                    setData({ ...data, student_certificate_issued_by: v })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Certificate Issued" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACFE">ACFE</SelectItem>
+                    <SelectItem value="ACAMS">ACAMS</SelectItem>
+                    <SelectItem value="IIA">IIA</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 my-4 gap-4">
             <div className="flex items-center h-full ml-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium">
@@ -508,6 +556,23 @@ const StudentForm = () => {
                   value={data.student_have_youtube}
                   onChange={(value) =>
                     setData({ ...data, student_have_youtube: value })
+                  }
+                  options={[
+                    { label: "Yes", value: "Yes" },
+                    { label: "No", value: "No" },
+                  ]}
+                />
+              </div>
+            </div>
+            <div className="flex items-center h-full ml-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Recent Passout </label>
+
+                <GroupButton
+                  className="w-fit"
+                  value={data.student_recent_passout}
+                  onChange={(value) =>
+                    setData({ ...data, student_recent_passout: value })
                   }
                   options={[
                     { label: "Yes", value: "Yes" },
@@ -692,6 +757,44 @@ const StudentForm = () => {
                       {errors.student_certificate_image_alt}
                     </p>
                   )}
+                </div>
+                <div className="col-span-2">
+                  <ImageUpload
+                    id="student_other_certificate_image"
+                    label="Other Certificate Image"
+                    selectedFile={data.student_other_certificate_image}
+                    previewImage={preview.student_other_certificate_image}
+                    onFileChange={(e) =>
+                      handleImageChange(
+                        "student_other_certificate_image",
+                        e.target.files?.[0]
+                      )
+                    }
+                    onRemove={() =>
+                      handleRemoveImage("student_other_certificate_image")
+                    }
+                    format="WEBP"
+                    allowedExtensions={["webp"]}
+                    dimensions="350*220"
+                    maxSize={5}
+                    requiredDimensions={[350, 220]}
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-sm font-medium">
+                    Other Certificate Image Alt *
+                  </label>
+                  <Textarea
+                    placeholder="Describe the certificate image"
+                    value={data.student_other_certificate_image_alt}
+                    onChange={(e) =>
+                      setData({
+                        ...data,
+                        student_other_certificate_image_alt: e.target.value,
+                      })
+                    }
+                    rows={4}
+                  />
                 </div>
               </>
             )}

@@ -2,9 +2,8 @@ import ApiErrorPage from "@/components/api-error/api-error";
 import BlogPreview from "@/components/blog-preview/blog-preview";
 import MemoizedSelect from "@/components/common/memoized-select";
 import PageHeader from "@/components/common/page-header";
-import { GroupButton } from "@/components/group-button";
+import ImageUpload from "@/components/image-upload/image-upload";
 import LoadingBar from "@/components/loader/loading-bar";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,31 +24,19 @@ import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { CKEditor } from "ckeditor4-react";
 import {
-  AlertCircle,
   BookOpen,
   Calendar,
   Eye,
   EyeOff,
   Image as ImageIcon,
-  Loader2,
   Plus,
   Trash2,
   Type,
   User,
 } from "lucide-react";
-import moment from "moment";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import BlogFaqForm from "./blog-faq";
-const EMPTY_FAQ = {
-  id: null,
-  faq_sort: "",
-  faq_heading: "",
-  faq_que: "",
-  faq_ans: "",
-  faq_status: "Active",
-};
 
 const CreateBlog = () => {
   const { trigger, loading: isSubmitting } = useApiMutation();
@@ -61,13 +48,9 @@ const CreateBlog = () => {
     queryKey: ["courses-dropdown"],
   });
   const [formData, setFormData] = useState({
-    blog_meta_title: "",
-    blog_meta_description: "",
-    blog_meta_keywords: "",
-    // blog_heading: "",
+    blog_heading: "",
     blog_short_description: "",
     blog_course: "",
-    blog_index: "no",
     blog_created: new Date().toISOString().split("T")[0],
     blog_images_alt: "",
     blog_slug: "",
@@ -76,22 +59,17 @@ const CreateBlog = () => {
   const [blogSubs, setBlogSubs] = useState([
     {
       blog_sub_heading: "",
-      blog_sub_heading_tag: "",
       blog_sub_description: "",
     },
   ]);
-  const [faqItems, setFaqItems] = useState([{ ...EMPTY_FAQ }]);
-  const [error, setError] = useState([]);
-
+  console.log(blogSubs, "blogSubs");
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [subErrors, setSubErrors] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [imageDimensions, setImageDimensions] = useState({
-    width: 0,
-    height: 0,
+  const [preview, setPreview] = useState({
+    blog_images: null,
   });
 
   const {
@@ -132,17 +110,14 @@ const CreateBlog = () => {
     if (option) {
       setSelectedGalleryImage(option);
 
-      // Copy URL to clipboard
-
       try {
         await navigator.clipboard.writeText(option.value);
         toast.success(`Image URL copied: ${option.image}`);
       } catch (error) {
         toast.error("Failed to copy URL");
       }
-
-      // Set preview image
-      setPreviewImage(option.value);
+      console.log(option.value, "option.value");
+      setPreview(option.value);
     } else {
       setSelectedGalleryImage(null);
     }
@@ -198,7 +173,6 @@ const CreateBlog = () => {
       ...blogSubs,
       {
         blog_sub_heading: "",
-        blog_sub_heading_tag: "",
         blog_sub_description: "",
       },
     ]);
@@ -217,95 +191,28 @@ const CreateBlog = () => {
     setSubErrors(updatedErrors);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const newErrors = [];
-
-    if (file.type !== "image/webp") {
-      newErrors.push("The image must be in WEBP format only.");
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      newErrors.push("Image must be less than 5MB.");
-    }
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      const img = new window.Image();
-      img.onload = () => {
-        if (img.width !== 1200 || img.height !== 628) {
-          newErrors.push("The image size must be exactly 1200×628 pixels.");
-        }
-
-        setImageDimensions({ width: img.width, height: img.height });
-
-        if (newErrors.length > 0) {
-          setErrors((prev) => ({
-            ...prev,
-            blog_images: newErrors.join(" \n "),
-          }));
-          setSelectedFile(null);
-          setPreviewImage(null);
-          setImageDimensions({ width: 0, height: 0 });
-        } else {
-          setSelectedFile(file);
-          setPreviewImage(reader.result);
-          setErrors((prev) => ({ ...prev, blog_images: "" }));
-        }
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewImage(null);
-    setImageDimensions({ width: 0, height: 0 });
-  };
-  const addFaq = () => setFaqItems([...faqItems, { ...EMPTY_FAQ }]);
-
-  const removeFaq = (i) => {
-    if (faqItems.length === 1) return;
-    setFaqItems(faqItems.filter((_, idx) => idx !== i));
-    setError(error.filter((_, idx) => idx !== i));
-  };
-
-  const moveFaq = (i, dir) => {
-    const copy = [...faqItems];
-    const swap = dir === "up" ? i - 1 : i + 1;
-    [copy[i], copy[swap]] = [copy[swap], copy[i]];
-    setFaqItems(copy);
-  };
-
-  const handleItemChange = (i, field, value) => {
-    const copy = [...faqItems];
-    copy[i][field] = value;
-    setFaqItems(copy);
-
-    if (error[i]?.[field]) {
-      const errCopy = [...error];
-      errCopy[i][field] = "";
-      setError(errCopy);
+  const handleImageChange = (fieldName, file) => {
+    if (file) {
+      setFormData({ ...formData, [fieldName]: file });
+      const url = URL.createObjectURL(file);
+      setPreview({ ...preview, [fieldName]: url });
+      setErrors({ ...errors, [fieldName]: "" });
     }
   };
+
+  const handleRemoveImage = (fieldName) => {
+    setFormData({ ...formData, [fieldName]: null });
+    setPreview({ ...preview, [fieldName]: "" });
+  };
+
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
-    if (!formData.blog_meta_title.trim()) {
-      newErrors.blog_meta_title = "Meta Title is required";
+
+    if (!formData.blog_heading.trim()) {
+      newErrors.blog_heading = "Blog heading is required";
       isValid = false;
     }
-    if (!formData.blog_meta_description.trim()) {
-      newErrors.blog_meta_description = "Meta Description is required";
-      isValid = false;
-    }
-    // if (!formData.blog_heading.trim()) {
-    //   newErrors.blog_heading = "Blog heading is required";
-    //   isValid = false;
-    // }
 
     if (!formData.blog_slug.trim()) {
       newErrors.blog_slug = "Blog slug is required";
@@ -316,10 +223,10 @@ const CreateBlog = () => {
       isValid = false;
     }
 
-    // if (!formData.blog_short_description.trim()) {
-    //   newErrors.blog_short_description = "Short description is required";
-    //   isValid = false;
-    // }
+    if (!formData.blog_short_description.trim()) {
+      newErrors.blog_short_description = "Short description is required";
+      isValid = false;
+    }
 
     if (!formData.blog_course.trim()) {
       newErrors.blog_course = "Course is required";
@@ -330,20 +237,10 @@ const CreateBlog = () => {
       newErrors.blog_created = "Blog date is required";
       isValid = false;
     }
-
+    if (!preview.blog_images && !formData.blog_images)
+      newErrors.blog_images = "Blog Image is required";
     if (!formData.blog_images_alt.trim()) {
       newErrors.blog_images_alt = "Image alt text is required";
-      isValid = false;
-    }
-
-    if (!selectedFile) {
-      newErrors.blog_images = "Blog image is required";
-      isValid = false;
-    } else if (
-      imageDimensions.width !== 1200 ||
-      imageDimensions.height !== 628
-    ) {
-      newErrors.blog_images = `Image dimensions must be exactly 1200×628 pixels. Current: ${imageDimensions.width}×${imageDimensions.height}`;
       isValid = false;
     }
 
@@ -354,28 +251,13 @@ const CreateBlog = () => {
         subError.blog_sub_heading = "Sub-heading is required";
         isValid = false;
       }
-      if (!sub.blog_sub_heading_tag.trim()) {
-        subError.blog_sub_heading_tag = "Sub-heading tag is required";
-        isValid = false;
-      }
       if (!sub.blog_sub_description.trim()) {
         subError.blog_sub_description = "Sub-description is required";
         isValid = false;
       }
       newSubErrors.push(subError);
     });
-    const err = [];
-    faqItems.forEach((f, i) => {
-      const e = {};
-      if (!f.faq_sort) e.faq_sort = "Required";
-      if (!f.faq_que) e.faq_que = "Required";
-      if (!f.faq_ans) e.faq_ans = "Required";
-      if (Object.keys(e).length) isValid = false;
-      err[i] = e;
-    });
 
-
-    setError(err);
     setErrors(newErrors);
     setSubErrors(newSubErrors);
     return isValid;
@@ -390,39 +272,26 @@ const CreateBlog = () => {
 
     const formDataObj = new FormData();
     formDataObj.append("blog_slug", formData.blog_slug);
-    formDataObj.append("blog_meta_title", formData.blog_meta_title);
-    formDataObj.append("blog_meta_description", formData.blog_meta_description);
-    formDataObj.append("blog_meta_keywords", formData.blog_meta_keywords);
-    // formDataObj.append("blog_heading", formData.blog_heading);
-    // formDataObj.append(
-    //   "blog_short_description",
-    //   formData.blog_short_description
-    // );
+    formDataObj.append("blog_heading", formData.blog_heading);
+    formDataObj.append(
+      "blog_short_description",
+      formData.blog_short_description
+    );
     formDataObj.append("blog_course", formData.blog_course);
-    formDataObj.append("blog_index", formData.blog_index);
     formDataObj.append("blog_created", formData.blog_created);
     formDataObj.append("blog_images_alt", formData.blog_images_alt);
     formDataObj.append("blog_images", selectedFile);
-
+    if (data.blog_images instanceof File)
+      formData.append("blog_images", data.blog_images);
     blogSubs.forEach((sub, index) => {
       formDataObj.append(
         `sub[${index}][blog_sub_heading]`,
         sub.blog_sub_heading
       );
       formDataObj.append(
-        `sub[${index}][blog_sub_heading_tag]`,
-        sub.blog_sub_heading_tag
-      );
-      formDataObj.append(
         `sub[${index}][blog_sub_description]`,
         sub.blog_sub_description
       );
-    });
-    faqItems.forEach((f, index) => {
-      formDataObj.append(`faq[${index}][faq_sort]`, f.faq_sort);
-      formDataObj.append(`faq[${index}][faq_heading]`, f.faq_heading);
-      formDataObj.append(`faq[${index}][faq_que]`, f.faq_que);
-      formDataObj.append(`faq[${index}][faq_ans]`, f.faq_ans);
     });
 
     selectedRelatedBlogs.forEach((blog, index) => {
@@ -453,12 +322,9 @@ const CreateBlog = () => {
 
   const handleReset = () => {
     setFormData({
-      // blog_heading: "",
-      blog_meta_title: "",
-      blog_meta_description: "",
-      blog_meta_keywords: "",
+      blog_heading: "",
+      blog_short_description: "",
       blog_course: "",
-      blog_index: "",
       blog_created: new Date().toISOString().split("T")[0],
       blog_images_alt: "",
       blog_slug: "",
@@ -466,14 +332,12 @@ const CreateBlog = () => {
     setBlogSubs([
       {
         blog_sub_heading: "",
-        blog_sub_heading_tag: "",
         blog_sub_description: "",
       },
     ]);
     setSelectedRelatedBlogs([]);
-    setSelectedFile(null);
     setPreviewImage(null);
-    setImageDimensions({ width: 0, height: 0 });
+    setPreview(null);
     setErrors({});
     setSubErrors([]);
     const fileInput = document.getElementById("blog_images");
@@ -489,9 +353,9 @@ const CreateBlog = () => {
         rightContent={
           <div className="flex justify-end gap-2 pt-4">
             <div className="flex gap-3 justify-end">
-              {/* <Button type="button" variant="outline" onClick={handleReset}>
+              <Button type="button" variant="outline" onClick={handleReset}>
                 Reset All
-              </Button> */}
+              </Button>
               <Button
                 type="submit"
                 onClick={handleSubmit}
@@ -501,10 +365,10 @@ const CreateBlog = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submiting...
+                    Publishing...
                   </>
                 ) : (
-                  "Submit Blog"
+                  "Publish Blog"
                 )}
               </Button>
             </div>
@@ -538,7 +402,7 @@ const CreateBlog = () => {
           <Card>
             <CardContent className="p-4">
               <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid grid-cols-4">
+                <TabsList className="grid grid-cols-3">
                   <TabsTrigger
                     value="basic"
                     className="flex items-center gap-2"
@@ -553,10 +417,6 @@ const CreateBlog = () => {
                     <BookOpen className="h-4 w-4" />
                     Content
                   </TabsTrigger>
-                  <TabsTrigger value="faq" className="flex items-center gap-2">
-                    <Type className="h-4 w-4" />
-                    Faq
-                  </TabsTrigger>
                   <TabsTrigger
                     value="related"
                     className="flex items-center gap-2"
@@ -569,65 +429,6 @@ const CreateBlog = () => {
                 <TabsContent value="basic" className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <Type className="h-4 w-4" />
-                        Meta Title*
-                      </Label>
-                      <Textarea
-                        name="blog_meta_title"
-                        placeholder="Enter mata title"
-                        value={formData.blog_meta_title}
-                        onChange={handleInputChange}
-                        className={`min-h-[100px] ${
-                          errors.blog_meta_title ? "border-red-500" : ""
-                        }`}
-                      />
-                      {errors.blog_meta_title && (
-                        <p className="text-sm text-red-500">
-                          {errors.blog_meta_title}
-                        </p>
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        <span>Meta Description *</span>{" "}
-                      </Label>
-                      <Textarea
-                        name="blog_meta_description"
-                        placeholder="Enter a brief meta description of your blog"
-                        value={formData.blog_meta_description}
-                        onChange={handleInputChange}
-                        className={`min-h-[100px] ${
-                          errors.blog_meta_description ? "border-red-500" : ""
-                        }`}
-                      />
-                      <div className="flex justify-between">
-                        {errors.blog_meta_description ? (
-                          <p className="text-sm text-red-500">
-                            {errors.blog_meta_description}
-                          </p>
-                        ) : (
-                          <p className="text-sm text-gray-500"></p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label className="flex items-center gap-2">
-                        <BookOpen className="h-4 w-4" />
-                        <span>Meta Keywords</span>{" "}
-                      </Label>
-                      <Textarea
-                        name="blog_meta_keywords"
-                        placeholder="Enter a meta Keywords"
-                        value={formData.blog_meta_keywords}
-                        onChange={handleInputChange}
-                        className={`min-h-[100px] ${
-                          errors.blog_meta_keywords ? "border-red-500" : ""
-                        }`}
-                      />
-                    </div>
-                    {/* <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Type className="h-4 w-4" />
                         Blog Heading *
@@ -670,8 +471,8 @@ const CreateBlog = () => {
                           <p className="text-sm text-gray-500"></p>
                         )}
                       </div>
-                    </div> */}
-                    <div className="space-y-2">
+                    </div>
+                    <div className="space-y-2 md:col-span-2 ">
                       <Label className="flex items-center gap-2">
                         <Type className="h-4 w-4" />
                         Blog Slug *
@@ -692,24 +493,6 @@ const CreateBlog = () => {
                         Auto-generates from heading, but you can edit it
                         directly
                       </p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <Type className="h-4 w-4" />
-                        Blog Index
-                      </Label>
-
-                      <GroupButton
-                        className="w-fit"
-                        value={formData.blog_index}
-                        onChange={(value) =>
-                          setFormData({ ...formData, blog_index: value })
-                        }
-                        options={[
-                          { label: "Yes", value: "yes" },
-                          { label: "No", value: "no" },
-                        ]}
-                      />
                     </div>
                     <div className="flex flex-col gap-2">
                       <div className="space-y-2">
@@ -788,89 +571,23 @@ const CreateBlog = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label className="flex items-center gap-2 text-sm">
-                        <ImageIcon className="h-4 w-4" />
-                        Blog Image *
-                      </Label>
-
-                      <Alert className="py-2 px-3 bg-blue-50 border-blue-200">
-                        <AlertDescription className="text-xs text-blue-700">
-                          WEBP • 1200×628 • Max 5MB
-                        </AlertDescription>
-                      </Alert>
-
-                      {selectedFile ? (
-                        <div className="border border-dashed rounded-md p-3">
-                          <div className="relative aspect-[1200/628] bg-gray-100 rounded overflow-hidden">
-                            <img
-                              src={previewImage}
-                              alt="Preview"
-                              className="w-full h-full object-contain"
-                            />
-                            <Button
-                              type="button"
-                              size="icon"
-                              variant="destructive"
-                              onClick={handleRemoveImage}
-                              className="absolute top-1 right-1 h-6 w-6"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-
-                          <div className="mt-2 text-xs flex items-center gap-3 text-center text-gray-600">
-                            <p className="truncate font-medium">
-                              {selectedFile.name}
-                            </p>
-                            <p>
-                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                            </p>
-                            {imageDimensions.width > 0 && (
-                              <p
-                                className={
-                                  imageDimensions.width === 1200 &&
-                                  imageDimensions.height === 628
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                                }
-                              >
-                                {imageDimensions.width}×{imageDimensions.height}
-                                px
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="border border-dashed rounded-md p-4 text-center hover:border-blue-400 transition">
-                          <Input
-                            id="blog_images"
-                            type="file"
-                            accept=".webp,image/webp"
-                            onChange={handleImageChange}
-                            className="hidden"
-                          />
-                          <Label
-                            htmlFor="blog_images"
-                            className="cursor-pointer"
-                          >
-                            <div className="flex flex-col items-center gap-2">
-                              <ImageIcon className="h-8 w-8 text-blue-500" />
-                              <p className="text-sm font-medium">
-                                Upload Image
-                              </p>
-                              <p className="text-xs text-gray-500">
-                                Click or drag & drop
-                              </p>
-                            </div>
-                          </Label>
-                        </div>
-                      )}
-
-                      {errors.blog_images && (
-                        <p className="text-xs text-red-500 text-center">
-                          {errors.blog_images}
-                        </p>
-                      )}
+                      <ImageUpload
+                        id="blog_images"
+                        label="Blog Image"
+                        required
+                        selectedFile={formData.blog_images}
+                        previewImage={preview.blog_images}
+                        onFileChange={(e) =>
+                          handleImageChange("blog_images", e.target.files?.[0])
+                        }
+                        onRemove={() => handleRemoveImage("blog_images")}
+                        error={errors.blog_images}
+                        format="WEBP"
+                        allowedExtensions={["webp"]}
+                        dimensions="1400x450"
+                        maxSize={5}
+                        requiredDimensions={[1400, 450]}
+                      />
                     </div>
                   </div>
                 </TabsContent>
@@ -894,68 +611,29 @@ const CreateBlog = () => {
                         </div>
 
                         <div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                              <Label>Sub-heading *</Label>
-                              <Input
-                                placeholder="Enter sub-heading"
-                                value={sub.blog_sub_heading}
-                                onChange={(e) =>
-                                  handleSubInputChange(
-                                    index,
-                                    "blog_sub_heading",
-                                    e.target.value
-                                  )
-                                }
-                                className={
-                                  subErrors[index]?.blog_sub_heading
-                                    ? "border-red-500"
-                                    : ""
-                                }
-                              />
-                              {subErrors[index]?.blog_sub_heading && (
-                                <p className="text-sm text-red-500">
-                                  {subErrors[index].blog_sub_heading}
-                                </p>
-                              )}
-                            </div>
-                            <div className="space-y-1">
-                              <Label>Sub-heading Tag *</Label>
-                              <Select
-                                value={sub.blog_sub_heading_tag}
-                                onValueChange={(value) =>
-                                  handleSubInputChange(
-                                    index,
-                                    "blog_sub_heading_tag",
-                                    value
-                                  )
-                                }
-                              >
-                                <SelectTrigger
-                                  className={
-                                    subErrors[index]?.blog_sub_heading_tag
-                                      ? "border-red-500"
-                                      : ""
-                                  }
-                                >
-                                  <SelectValue placeholder="Select heading tag" />
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                  <SelectItem value="h1">H1</SelectItem>
-                                  <SelectItem value="h2">H2</SelectItem>
-                                  <SelectItem value="h3">H3</SelectItem>
-                                  <SelectItem value="h4">H4</SelectItem>
-                                  <SelectItem value="h5">H5</SelectItem>
-                                  <SelectItem value="h6">H6</SelectItem>
-                                </SelectContent>
-                              </Select>
-                              {subErrors[index]?.blog_sub_heading_tag && (
-                                <p className="text-sm text-red-500">
-                                  {subErrors[index].blog_sub_heading_tag}
-                                </p>
-                              )}
-                            </div>
+                          <div className="space-y-1">
+                            <Label>Sub-heading *</Label>
+                            <Input
+                              placeholder="Enter sub-heading"
+                              value={sub.blog_sub_heading}
+                              onChange={(e) =>
+                                handleSubInputChange(
+                                  index,
+                                  "blog_sub_heading",
+                                  e.target.value
+                                )
+                              }
+                              className={
+                                subErrors[index]?.blog_sub_heading
+                                  ? "border-red-500"
+                                  : ""
+                              }
+                            />
+                            {subErrors[index]?.blog_sub_heading && (
+                              <p className="text-sm text-red-500">
+                                {subErrors[index].blog_sub_heading}
+                              </p>
+                            )}
                           </div>
 
                           <div className="space-y-1">
@@ -1081,16 +759,6 @@ const CreateBlog = () => {
                   </div>
                 </TabsContent>
 
-                <TabsContent value="faq" className="space-y-4">
-                  <BlogFaqForm
-                    faqItems={faqItems}
-                    error={error}
-                    addFaq={addFaq}
-                    removeFaq={removeFaq}
-                    moveFaq={moveFaq}
-                    handleItemChange={handleItemChange}
-                  />
-                </TabsContent>
                 <TabsContent value="related" className="space-y-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
@@ -1167,14 +835,12 @@ const CreateBlog = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold">Live Preview</h3>
-
-                    {previewImage && (
+                    {preview?.blog_images && (
                       <BlogPreview
                         formData={formData}
                         blogSubs={blogSubs}
                         selectedRelatedBlogs={selectedRelatedBlogs}
-                        previewImage={previewImage}
-                        imageDimensions={imageDimensions}
+                        previewImage={preview?.blog_images}
                       />
                     )}
                   </div>
@@ -1185,30 +851,18 @@ const CreateBlog = () => {
 
                 <div className="space-y-4">
                   <div className="border rounded-lg overflow-hidden shadow-sm">
-                    <div className="relative aspect-[1200/628] bg-gray-100 overflow-hidden">
-                      {previewImage ? (
+                    <div className="relative aspect-[1400/450] bg-gray-100 overflow-hidden">
+                      {preview?.blog_images ? (
                         <img
-                          src={previewImage}
+                          src={preview?.blog_images}
                           alt={formData.blog_images_alt || "Blog image"}
                           className="w-full h-full object-cover"
-                          style={{
-                            objectFit:
-                              imageDimensions.width === 1200 &&
-                              imageDimensions.height === 628
-                                ? "cover"
-                                : "contain",
-                            backgroundColor:
-                              imageDimensions.width === 1200 &&
-                              imageDimensions.height === 628
-                                ? "transparent"
-                                : "#f3f4f6",
-                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-r from-gray-100 to-gray-200">
                           <ImageIcon className="h-12 w-12 text-gray-400 mb-2" />
                           <p className="text-sm text-gray-500">
-                            1200×628 pixels
+                            1400×450 pixels
                           </p>
                         </div>
                       )}
@@ -1222,13 +876,13 @@ const CreateBlog = () => {
                           </Badge>
                         </div>
                       )}
-                      {previewImage && imageDimensions.width > 0 && (
+                      {/* {previewImage && imageDimensions.width > 0 && (
                         <div className="absolute bottom-2 right-2">
                           <Badge
                             variant="outline"
                             className={`text-xs ${
-                              imageDimensions.width === 1200 &&
-                              imageDimensions.height === 628
+                              imageDimensions.width === 1400 &&
+                              imageDimensions.height === 450
                                 ? "bg-green-50 text-green-700 border-green-200"
                                 : "bg-red-50 text-red-700 border-red-200"
                             }`}
@@ -1236,17 +890,17 @@ const CreateBlog = () => {
                             {imageDimensions.width}×{imageDimensions.height}
                           </Badge>
                         </div>
-                      )}
+                      )} */}
                     </div>
 
                     <div className="p-4">
-                      {/* {formData.blog_heading ? (
+                      {formData.blog_heading ? (
                         <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
                           {formData.blog_heading}
                         </h3>
                       ) : (
                         <div className="h-6 bg-gray-200 rounded mb-2 animate-pulse"></div>
-                      )} */}
+                      )}
 
                       {formData.blog_slug && (
                         <div className="mb-2">
@@ -1270,13 +924,7 @@ const CreateBlog = () => {
                       <div className="flex items-center justify-between text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          <span>
-                            {formData.blog_created
-                              ? moment(formData.blog_created).format(
-                                  "DD MMM YYYY"
-                                )
-                              : "Date not set"}
-                          </span>
+                          <span>{formData.blog_created || "Date not set"}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <BookOpen className="h-3 w-3" />
@@ -1288,6 +936,39 @@ const CreateBlog = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* {previewImage && (
+                    <Alert
+                      className={`${
+                        imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450
+                          ? "bg-green-50 border-green-200"
+                          : "bg-yellow-50 border-yellow-200"
+                      }`}
+                    >
+                      <AlertCircle
+                        className={`h-4 w-4 ${
+                          imageDimensions.width === 1400 &&
+                          imageDimensions.height === 450
+                            ? "text-green-600"
+                            : "text-yellow-600"
+                        }`}
+                      />
+                      <AlertDescription className="text-sm">
+                        {imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450 ? (
+                          <span className="text-green-700">
+                            ✓ Image dimensions are correct
+                          </span>
+                        ) : (
+                          <span className="text-yellow-700">
+                            ⚠ Current: {imageDimensions.width}×
+                            {imageDimensions.height}. Required: 1400×450
+                          </span>
+                        )}
+                      </AlertDescription>
+                    </Alert>
+                  )} */}
 
                   {blogSubs.map((sub, index) => (
                     <div key={index} className="border rounded-lg p-4">
@@ -1327,14 +1008,13 @@ const CreateBlog = () => {
                       </div>
                     </div>
                   )}
-
                   <div className="grid grid-cols-4 gap-2 text-center">
-                    {/* <div className="bg-gray-50 p-3 rounded-lg"> */}
-                    {/* <p className="text-2xl font-bold text-gray-900">
+                    <div className="bg-gray-50 p-3 rounded-lg">
+                      <p className="text-2xl font-bold text-gray-900">
                         {formData.blog_heading.length}
-                      </p> */}
-                    {/* <p className="text-xs text-gray-500">Chars</p>
-                    </div> */}
+                      </p>
+                      <p className="text-xs text-gray-500">Chars</p>
+                    </div>
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
                         {blogSubs.length}
@@ -1343,14 +1023,14 @@ const CreateBlog = () => {
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
-                        {selectedFile ? "✓" : "✗"}
+                        {preview?.blog_images ? "✓" : "✗"}
                       </p>
                       <p className="text-xs text-gray-500">Image</p>
                     </div>
-                    <div
+                    {/* <div
                       className={`p-3 rounded-lg ${
-                        imageDimensions.width === 1200 &&
-                        imageDimensions.height === 628
+                        imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450
                           ? "bg-green-50"
                           : selectedFile
                           ? "bg-yellow-50"
@@ -1358,15 +1038,15 @@ const CreateBlog = () => {
                       }`}
                     >
                       <p className="text-2xl font-bold text-gray-900">
-                        {imageDimensions.width === 1200 &&
-                        imageDimensions.height === 628
+                        {imageDimensions.width === 1400 &&
+                        imageDimensions.height === 450
                           ? "✓"
                           : selectedFile
                           ? "⚠"
                           : "-"}
                       </p>
                       <p className="text-xs text-gray-500">Size</p>
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </CardContent>

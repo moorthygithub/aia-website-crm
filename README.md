@@ -3,3 +3,6 @@ VITE_SECRET_VALIDATION=f2a2d3f4a5b6c7d8e9f0123456789abc
 
 
 https://documenter.getpostman.com/view/7456368/2sB3dWsSYE#5f1c067c-ad12-491f-b283-724002a81548
+
+
+https://aia.in.net/webapi/public/api/faqSub/1

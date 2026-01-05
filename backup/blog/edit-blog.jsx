@@ -27,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { BLOG_API, COURSE_API, GALLERY_API } from "@/constants/apiConstants";
@@ -51,15 +52,6 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import BlogFaqForm from "./blog-faq";
-const EMPTY_FAQ = {
-  id: "",
-  faq_sort: "",
-  faq_heading: "",
-  faq_que: "",
-  faq_ans: "",
-  faq_status: "Active",
-};
 
 const EditBlog = () => {
   const { id } = useParams();
@@ -106,8 +98,6 @@ const EditBlog = () => {
     width: 0,
     height: 0,
   });
-  const [faqItems, setFaqItems] = useState([{ ...EMPTY_FAQ }]);
-  const [error, setError] = useState([]);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const {
     data: blogData,
@@ -207,17 +197,6 @@ const EditBlog = () => {
           blog_sub_heading_tag: sub.blog_sub_heading_tag || "",
           blog_sub_description: sub.blog_sub_description || "",
         }));
-        console.log("subs", data?.faq);
-        setFaqItems(
-          blogData?.faq?.map((s) => ({
-            id: s.id,
-            faq_sort: s.faq_sort ?? "",
-            faq_heading: s.faq_heading ?? "",
-            faq_que: s.faq_que ?? "",
-            faq_ans: s.faq_ans ?? "",
-            faq_status: s.faq_status ?? "Active",
-          }))
-        );
         setBlogSubs(subs);
         setExistingSubIds(subs.map((sub) => sub.id));
         setSubErrors(Array(subs.length).fill({}));
@@ -232,9 +211,33 @@ const EditBlog = () => {
         setSubErrors([{}]);
       }
 
+      // Initialize empty related blogs array
       setSelectedRelatedBlogs([]);
       setExistingRelatedIds([]);
     }
+    // if (blogData?.data.web_blog_subs?.length) {
+    //   const subs = blogData.data.web_blog_subs.map((sub) => ({
+    //     id: sub.id,
+    //     blog_sub_heading: sub.blog_sub_heading || "",
+    //     blog_sub_description: sub.blog_sub_description || "",
+    //   }));
+    //   setBlogSubs(subs);
+    //   setExistingSubIds(subs.map((sub) => sub.id));
+    //   setSubErrors(Array(subs.length).fill({}));
+    // } else {
+    //   setBlogSubs([
+    //     {
+    //       blog_sub_heading: "",
+    //       blog_sub_description: "",
+    //       blog_sub_heading_tag: "",
+    //     },
+    //   ]);
+    //   setSubErrors([{}]);
+    // }
+
+    // // Initialize empty related blogs array
+    // setSelectedRelatedBlogs([]);
+    // setExistingRelatedIds([]);
   }, [blogData]);
   useEffect(() => {
     if (blogData?.data?.web_blog_relateds?.length && blogOptions.length > 0) {
@@ -426,32 +429,7 @@ const EditBlog = () => {
       setDeleteItem({ type: "", id: null, index: null });
     }
   };
-  const addFaq = () => setFaqItems([...faqItems, { ...EMPTY_FAQ }]);
 
-  const removeFaq = (i) => {
-    if (faqItems.length === 1) return;
-    setFaqItems(faqItems.filter((_, idx) => idx !== i));
-    setError(error.filter((_, idx) => idx !== i));
-  };
-
-  const moveFaq = (i, dir) => {
-    const copy = [...faqItems];
-    const swap = dir === "up" ? i - 1 : i + 1;
-    [copy[i], copy[swap]] = [copy[swap], copy[i]];
-    setFaqItems(copy);
-  };
-
-  const handleItemChange = (i, field, value) => {
-    const copy = [...faqItems];
-    copy[i][field] = value;
-    setFaqItems(copy);
-
-    if (error[i]?.[field]) {
-      const errCopy = [...error];
-      errCopy[i][field] = "";
-      setError(errCopy);
-    }
-  };
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
@@ -477,10 +455,10 @@ const EditBlog = () => {
       isValid = false;
     }
 
-    // if (!formData.blog_short_description.trim()) {
-    //   newErrors.blog_short_description = "Short description is required";
-    //   isValid = false;
-    // }
+    if (!formData.blog_short_description.trim()) {
+      newErrors.blog_short_description = "Short description is required";
+      isValid = false;
+    }
 
     if (!formData.blog_course.trim()) {
       newErrors.blog_course = "Course is required";
@@ -521,16 +499,7 @@ const EditBlog = () => {
       }
       newSubErrors.push(subError);
     });
-    const err = [];
-    faqItems.forEach((f, i) => {
-      const e = {};
-      if (!f.faq_sort) e.faq_sort = "Required";
-      if (!f.faq_que) e.faq_que = "Required";
-      if (!f.faq_ans) e.faq_ans = "Required";
-      if (Object.keys(e).length) isValid = false;
-      err[i] = e;
-    });
-    setError(err);
+
     setErrors(newErrors);
     setSubErrors(newSubErrors);
     return isValid;
@@ -584,14 +553,7 @@ const EditBlog = () => {
         sub.blog_sub_description
       );
     });
-    faqItems.forEach((f, index) => {
-      formDataObj.append(`faq[${index}][id]`, f.id);
-      formDataObj.append(`faq[${index}][faq_sort]`, f.faq_sort);
-      formDataObj.append(`faq[${index}][faq_heading]`, f.faq_heading);
-      formDataObj.append(`faq[${index}][faq_que]`, f.faq_que);
-      formDataObj.append(`faq[${index}][faq_ans]`, f.faq_ans);
-      formDataObj.append(`faq[${index}][faq_status]`, f.faq_status);
-    });
+
     selectedRelatedBlogs.forEach((blog, index) => {
       if (existingRelatedIds.includes(blog.value)) {
         formDataObj.append(`related[${index}][id]`, blog.value);
@@ -693,9 +655,9 @@ const EditBlog = () => {
         rightContent={
           <div className="flex justify-end gap-2 pt-4">
             <div className="flex gap-3 justify-end">
-              {/* <Button type="button" variant="outline" onClick={handleReset}>
+              <Button type="button" variant="outline" onClick={handleReset}>
                 Reset All
-              </Button> */}
+              </Button>
               <Button
                 type="submit"
                 onClick={handleSubmit}
@@ -744,7 +706,7 @@ const EditBlog = () => {
           <Card>
             <CardContent className="p-4">
               <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid grid-cols-4">
+                <TabsList className="grid grid-cols-3">
                   <TabsTrigger
                     value="basic"
                     className="flex items-center gap-2"
@@ -758,10 +720,6 @@ const EditBlog = () => {
                   >
                     <BookOpen className="h-4 w-4" />
                     Content
-                  </TabsTrigger>
-                  <TabsTrigger value="faq" className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    Faq
                   </TabsTrigger>
                   <TabsTrigger
                     value="related"
@@ -1324,17 +1282,7 @@ const EditBlog = () => {
                     </Select>
                   </div>
                 </TabsContent>
-                <TabsContent value="faq" className="space-y-4">
-                  <BlogFaqForm
-                    isEdit={true}
-                    faqItems={faqItems}
-                    error={error}
-                    addFaq={addFaq}
-                    removeFaq={removeFaq}
-                    moveFaq={moveFaq}
-                    handleItemChange={handleItemChange}
-                  />
-                </TabsContent>
+
                 <TabsContent value="related" className="space-y-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">

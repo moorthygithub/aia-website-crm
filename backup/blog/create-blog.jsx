@@ -5,16 +5,6 @@ import PageHeader from "@/components/common/page-header";
 import { GroupButton } from "@/components/group-button";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -36,7 +26,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { CKEditor } from "ckeditor4-react";
 import {
   AlertCircle,
-  ArrowLeft,
   BookOpen,
   Calendar,
   Eye,
@@ -48,33 +37,16 @@ import {
   Type,
   User,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import moment from "moment";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import BlogFaqForm from "./blog-faq";
-const EMPTY_FAQ = {
-  id: "",
-  faq_sort: "",
-  faq_heading: "",
-  faq_que: "",
-  faq_ans: "",
-  faq_status: "Active",
-};
 
-const EditBlog = () => {
-  const { id } = useParams();
+const CreateBlog = () => {
   const { trigger, loading: isSubmitting } = useApiMutation();
-  const { trigger: deleteTrigger } = useApiMutation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showPreview, setShowPreview] = useState(true);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteItem, setDeleteItem] = useState({
-    type: "",
-    id: null,
-    index: null,
-  });
-  const [existingImageUrl, setExistingImageUrl] = useState("");
   const { data: coursesData } = useGetApiMutation({
     url: COURSE_API.courses,
     queryKey: ["courses-dropdown"],
@@ -84,20 +56,24 @@ const EditBlog = () => {
     blog_meta_description: "",
     blog_meta_keywords: "",
     // blog_heading: "",
-    // blog_short_description: "",
+    blog_short_description: "",
     blog_course: "",
     blog_index: "no",
     blog_created: new Date().toISOString().split("T")[0],
     blog_images_alt: "",
     blog_slug: "",
-    blog_status: "Active",
-    blog_images: null,
   });
 
-  const [blogSubs, setBlogSubs] = useState([]);
+  const [blogSubs, setBlogSubs] = useState([
+    {
+      blog_sub_heading: "",
+      blog_sub_heading_tag: "",
+      blog_sub_description: "",
+    },
+  ]);
+
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
-  const [existingSubIds, setExistingSubIds] = useState([]);
-  const [existingRelatedIds, setExistingRelatedIds] = useState([]);
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [subErrors, setSubErrors] = useState([]);
   const [previewImage, setPreviewImage] = useState(null);
@@ -105,18 +81,6 @@ const EditBlog = () => {
   const [imageDimensions, setImageDimensions] = useState({
     width: 0,
     height: 0,
-  });
-  const [faqItems, setFaqItems] = useState([{ ...EMPTY_FAQ }]);
-  const [error, setError] = useState([]);
-  const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
-  const {
-    data: blogData,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetApiMutation({
-    url: BLOG_API.byId(id),
-    queryKey: ["blog-edit", id],
   });
 
   const {
@@ -129,18 +93,13 @@ const EditBlog = () => {
     queryKey: ["blog-dropdown"],
   });
 
-  const blogOptions = useMemo(() => {
-    return (
-      blogDropdownData?.data
-        ?.filter((blog) => blog.id !== parseInt(id))
-        .map((blog) => ({
-          value: blog.id,
-          label: blog.blog_heading,
-          slug: blog.blog_slug,
-          status: blog.blog_status,
-        })) || []
-    );
-  }, [blogDropdownData?.data, id]);
+  const blogOptions =
+    blogDropdownData?.data?.map((blog) => ({
+      value: blog.id,
+      label: blog.blog_heading,
+      slug: blog.blog_slug,
+      status: blog.blog_status,
+    })) || [];
 
   const {
     data: galleryData,
@@ -162,99 +121,32 @@ const EditBlog = () => {
     if (option) {
       setSelectedGalleryImage(option);
 
+      // Copy URL to clipboard
+
       try {
         await navigator.clipboard.writeText(option.value);
         toast.success(`Image URL copied: ${option.image}`);
       } catch (error) {
         toast.error("Failed to copy URL");
       }
+
+      // Set preview image
+      setPreviewImage(option.value);
     } else {
       setSelectedGalleryImage(null);
     }
   };
-  useEffect(() => {
-    if (blogData?.data) {
-      const data = blogData.data;
-      const blogBaseUrl =
-        blogData.image_url?.find((img) => img.image_for === "Blog")
-          ?.image_url || "";
-
-      setFormData({
-        blog_meta_title: data.blog_meta_title || "",
-        blog_meta_description: data.blog_meta_description || "",
-        // blog_heading: data.blog_heading || "",
-        blog_meta_keywords: data.blog_meta_keywords || "",
-        blog_index: data.blog_index || "",
-        // blog_short_description: data.blog_short_description || "",
-        blog_course: data.blog_course || "",
-        blog_created:
-          data.blog_created || new Date().toISOString().split("T")[0],
-        blog_images_alt: data.blog_images_alt || "",
-        blog_slug: data.blog_slug || "",
-        blog_status: data.blog_status || "Active",
-        blog_images: data.blog_images,
-      });
-
-      if (data.blog_images && blogBaseUrl) {
-        setExistingImageUrl(`${blogBaseUrl}${data.blog_images}`);
-        setPreviewImage(`${blogBaseUrl}${data.blog_images}`);
-      }
-
-      if (data.web_blog_subs?.length) {
-        const subs = data.web_blog_subs.map((sub) => ({
-          id: sub.id,
-          blog_sub_heading: sub.blog_sub_heading || "",
-          blog_sub_heading_tag: sub.blog_sub_heading_tag || "",
-          blog_sub_description: sub.blog_sub_description || "",
-        }));
-        console.log("subs", data?.faq);
-        setFaqItems(
-          blogData?.faq?.map((s) => ({
-            id: s.id,
-            faq_sort: s.faq_sort ?? "",
-            faq_heading: s.faq_heading ?? "",
-            faq_que: s.faq_que ?? "",
-            faq_ans: s.faq_ans ?? "",
-            faq_status: s.faq_status ?? "Active",
-          }))
-        );
-        setBlogSubs(subs);
-        setExistingSubIds(subs.map((sub) => sub.id));
-        setSubErrors(Array(subs.length).fill({}));
-      } else {
-        setBlogSubs([
-          {
-            blog_sub_heading: "",
-            blog_sub_description: "",
-            blog_sub_heading_tag: "",
-          },
-        ]);
-        setSubErrors([{}]);
-      }
-
-      setSelectedRelatedBlogs([]);
-      setExistingRelatedIds([]);
-    }
-  }, [blogData]);
-  useEffect(() => {
-    if (blogData?.data?.web_blog_relateds?.length && blogOptions.length > 0) {
-      const relatedIds = blogData.data.web_blog_relateds.map(
-        (rel) => rel.blog_related_id
-      );
-      setExistingRelatedIds(relatedIds);
-
-      const selected = blogOptions.filter((blog) =>
-        relatedIds.includes(blog.value)
-      );
-      setSelectedRelatedBlogs(selected);
-    }
-  }, [blogData, blogOptions]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+
+    if (name === "blog_heading" && !formData.blog_slug.includes("-edited-")) {
+      const slug = generateSlug(value);
+      setFormData((prev) => ({ ...prev, blog_slug: slug }));
+    }
 
     if (errors[name]) {
       setErrors((prev) => ({
@@ -267,6 +159,15 @@ const EditBlog = () => {
   const handleSlugChange = (e) => {
     const value = e.target.value;
     setFormData((prev) => ({ ...prev, blog_slug: value }));
+  };
+
+  const generateSlug = (text) => {
+    if (!text) return "";
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-");
   };
 
   const handleSubInputChange = (index, field, value) => {
@@ -299,16 +200,10 @@ const EditBlog = () => {
       return;
     }
 
-    const subToDelete = blogSubs[index];
-    if (subToDelete.id) {
-      setDeleteItem({ type: "sub", id: subToDelete.id, index });
-      setDeleteDialogOpen(true);
-    } else {
-      const updatedSubs = blogSubs.filter((_, i) => i !== index);
-      setBlogSubs(updatedSubs);
-      const updatedErrors = subErrors.filter((_, i) => i !== index);
-      setSubErrors(updatedErrors);
-    }
+    const updatedSubs = blogSubs.filter((_, i) => i !== index);
+    setBlogSubs(updatedSubs);
+    const updatedErrors = subErrors.filter((_, i) => i !== index);
+    setSubErrors(updatedErrors);
   };
 
   const handleImageChange = (e) => {
@@ -341,7 +236,7 @@ const EditBlog = () => {
             blog_images: newErrors.join(" \n "),
           }));
           setSelectedFile(null);
-          setPreviewImage(existingImageUrl);
+          setPreviewImage(null);
           setImageDimensions({ width: 0, height: 0 });
         } else {
           setSelectedFile(file);
@@ -357,104 +252,13 @@ const EditBlog = () => {
   const handleRemoveImage = () => {
     setSelectedFile(null);
     setPreviewImage(null);
-    setExistingImageUrl("");
     setImageDimensions({ width: 0, height: 0 });
-    setFormData((prev) => ({ ...prev, blog_images: null }));
-
-    if (errors.blog_images) {
-      setErrors((prev) => ({ ...prev, blog_images: "" }));
-    }
-
-    const fileInput = document.getElementById("blog_images");
-    if (fileInput) fileInput.value = "";
   };
 
-  const handleDeleteConfirm = async () => {
-    try {
-      if (deleteItem.type === "sub") {
-        const res = await deleteTrigger({
-          url: BLOG_API.deleteSub(deleteItem.id),
-          method: "delete",
-        });
-
-        if (res?.code === 200) {
-          toast.success(res?.msg || "Sub-section deleted successfully");
-          const updatedSubs = blogSubs.filter((_, i) => i !== deleteItem.index);
-          setBlogSubs(updatedSubs);
-          const updatedErrors = subErrors.filter(
-            (_, i) => i !== deleteItem.index
-          );
-          setSubErrors(updatedErrors);
-          const updatedIds = existingSubIds.filter(
-            (subId) => subId !== deleteItem.id
-          );
-          setExistingSubIds(updatedIds);
-        } else {
-          toast.error(res?.msg || "Failed to delete sub-section");
-        }
-      } else if (deleteItem.type === "related") {
-        const res = await deleteTrigger({
-          url: BLOG_API.deleteRelated(deleteItem.id),
-          method: "delete",
-        });
-
-        if (res?.code === 200) {
-          toast.success(res?.msg || "Related blog removed successfully");
-
-          const updatedRelated = selectedRelatedBlogs.filter(
-            (_, i) => i !== deleteItem.index
-          );
-          setSelectedRelatedBlogs(updatedRelated);
-
-          const relationToRemove = blogData?.data?.web_blog_relateds?.find(
-            (rel) => rel.id === deleteItem.id
-          );
-          if (relationToRemove) {
-            const updatedIds = existingRelatedIds.filter(
-              (relId) => relId !== relationToRemove.blog_related_id
-            );
-            setExistingRelatedIds(updatedIds);
-          }
-        } else {
-          toast.error(res?.msg || "Failed to remove related blog");
-        }
-      }
-    } catch (error) {
-      toast.error(error?.response?.data?.msg || "Something went wrong");
-    } finally {
-      setDeleteDialogOpen(false);
-      setDeleteItem({ type: "", id: null, index: null });
-    }
-  };
-  const addFaq = () => setFaqItems([...faqItems, { ...EMPTY_FAQ }]);
-
-  const removeFaq = (i) => {
-    if (faqItems.length === 1) return;
-    setFaqItems(faqItems.filter((_, idx) => idx !== i));
-    setError(error.filter((_, idx) => idx !== i));
-  };
-
-  const moveFaq = (i, dir) => {
-    const copy = [...faqItems];
-    const swap = dir === "up" ? i - 1 : i + 1;
-    [copy[i], copy[swap]] = [copy[swap], copy[i]];
-    setFaqItems(copy);
-  };
-
-  const handleItemChange = (i, field, value) => {
-    const copy = [...faqItems];
-    copy[i][field] = value;
-    setFaqItems(copy);
-
-    if (error[i]?.[field]) {
-      const errCopy = [...error];
-      errCopy[i][field] = "";
-      setError(errCopy);
-    }
-  };
   const validateForm = () => {
     const newErrors = {};
     let isValid = true;
+
     if (!formData.blog_meta_title.trim()) {
       newErrors.blog_meta_title = "Meta Title is required";
       isValid = false;
@@ -477,10 +281,10 @@ const EditBlog = () => {
       isValid = false;
     }
 
-    // if (!formData.blog_short_description.trim()) {
-    //   newErrors.blog_short_description = "Short description is required";
-    //   isValid = false;
-    // }
+    if (!formData.blog_short_description.trim()) {
+      newErrors.blog_short_description = "Short description is required";
+      isValid = false;
+    }
 
     if (!formData.blog_course.trim()) {
       newErrors.blog_course = "Course is required";
@@ -497,12 +301,12 @@ const EditBlog = () => {
       isValid = false;
     }
 
-    if (!selectedFile && !formData.blog_images) {
+    if (!selectedFile) {
       newErrors.blog_images = "Blog image is required";
       isValid = false;
     } else if (
-      selectedFile &&
-      (imageDimensions.width !== 1200 || imageDimensions.height !== 628)
+      imageDimensions.width !== 1200 ||
+      imageDimensions.height !== 628
     ) {
       newErrors.blog_images = `Image dimensions must be exactly 1200×628 pixels. Current: ${imageDimensions.width}×${imageDimensions.height}`;
       isValid = false;
@@ -515,22 +319,17 @@ const EditBlog = () => {
         subError.blog_sub_heading = "Sub-heading is required";
         isValid = false;
       }
+      if (!sub.blog_sub_heading_tag.trim()) {
+        subError.blog_sub_heading_tag = "Sub-heading tag is required";
+        isValid = false;
+      }
       if (!sub.blog_sub_description.trim()) {
         subError.blog_sub_description = "Sub-description is required";
         isValid = false;
       }
       newSubErrors.push(subError);
     });
-    const err = [];
-    faqItems.forEach((f, i) => {
-      const e = {};
-      if (!f.faq_sort) e.faq_sort = "Required";
-      if (!f.faq_que) e.faq_que = "Required";
-      if (!f.faq_ans) e.faq_ans = "Required";
-      if (Object.keys(e).length) isValid = false;
-      err[i] = e;
-    });
-    setError(err);
+
     setErrors(newErrors);
     setSubErrors(newSubErrors);
     return isValid;
@@ -548,29 +347,18 @@ const EditBlog = () => {
     formDataObj.append("blog_meta_title", formData.blog_meta_title);
     formDataObj.append("blog_meta_description", formData.blog_meta_description);
     formDataObj.append("blog_meta_keywords", formData.blog_meta_keywords);
-    formDataObj.append("blog_index", formData.blog_index);
-
-    formDataObj.append("blog_slug", formData.blog_slug);
     // formDataObj.append("blog_heading", formData.blog_heading);
     // formDataObj.append(
     //   "blog_short_description",
     //   formData.blog_short_description
     // );
     formDataObj.append("blog_course", formData.blog_course);
+    formDataObj.append("blog_index", formData.blog_index);
     formDataObj.append("blog_created", formData.blog_created);
     formDataObj.append("blog_images_alt", formData.blog_images_alt);
-    formDataObj.append("blog_status", formData.blog_status);
-
-    if (selectedFile) {
-      formDataObj.append("blog_images", selectedFile);
-    } else if (formData.blog_images) {
-      formDataObj.append("existing_image", formData.blog_images);
-    }
+    formDataObj.append("blog_images", selectedFile);
 
     blogSubs.forEach((sub, index) => {
-      if (sub.id) {
-        formDataObj.append(`sub[${index}][id]`, sub.id);
-      }
       formDataObj.append(
         `sub[${index}][blog_sub_heading]`,
         sub.blog_sub_heading
@@ -584,24 +372,14 @@ const EditBlog = () => {
         sub.blog_sub_description
       );
     });
-    faqItems.forEach((f, index) => {
-      formDataObj.append(`faq[${index}][id]`, f.id);
-      formDataObj.append(`faq[${index}][faq_sort]`, f.faq_sort);
-      formDataObj.append(`faq[${index}][faq_heading]`, f.faq_heading);
-      formDataObj.append(`faq[${index}][faq_que]`, f.faq_que);
-      formDataObj.append(`faq[${index}][faq_ans]`, f.faq_ans);
-      formDataObj.append(`faq[${index}][faq_status]`, f.faq_status);
-    });
+
     selectedRelatedBlogs.forEach((blog, index) => {
-      if (existingRelatedIds.includes(blog.value)) {
-        formDataObj.append(`related[${index}][id]`, blog.value);
-      }
       formDataObj.append(`related[${index}][blog_related_id]`, blog.value);
     });
 
     try {
       const res = await trigger({
-        url: BLOG_API.updateById(id),
+        url: BLOG_API.create,
         method: "post",
         data: formDataObj,
         headers: {
@@ -609,12 +387,12 @@ const EditBlog = () => {
         },
       });
 
-      if (res?.code === 200) {
-        toast.success(res?.msg || "Blog updated successfully");
+      if (res?.code === 201) {
+        toast.success(res?.msg || "Blog created successfully");
         queryClient.invalidateQueries(["blog-list"]);
         navigate("/blog-list");
       } else {
-        toast.error(res?.msg || "Failed to update blog");
+        toast.error(res?.msg || "Failed to create blog");
       }
     } catch (error) {
       toast.error(error?.response?.data?.msg || "Something went wrong");
@@ -622,74 +400,40 @@ const EditBlog = () => {
   };
 
   const handleReset = () => {
-    if (blogData?.data) {
-      const data = blogData.data;
-      const blogBaseUrl =
-        blogData.image_url?.find((img) => img.image_for === "Blog")
-          ?.image_url || "";
-
-      setFormData({
-        // blog_heading: data.blog_heading || "",
-        // blog_short_description: data.blog_short_description || "",
-        blog_course: data.blog_course || "",
-        blog_created:
-          data.blog_created || new Date().toISOString().split("T")[0],
-        blog_images_alt: data.blog_images_alt || "",
-        blog_slug: data.blog_slug || "",
-        blog_status: data.blog_status || "Active",
-        blog_images: data.blog_images,
-      });
-
-      if (data.blog_images && blogBaseUrl) {
-        setExistingImageUrl(`${blogBaseUrl}${data.blog_images}`);
-        setPreviewImage(`${blogBaseUrl}${data.blog_images}`);
-      } else {
-        setPreviewImage(null);
-      }
-
-      if (data.web_blog_subs?.length) {
-        const subs = data.web_blog_subs.map((sub) => ({
-          id: sub.id,
-          blog_sub_heading_tag: sub.blog_sub_heading_tag || "",
-          blog_sub_heading: sub.blog_sub_heading || "",
-          blog_sub_description: sub.blog_sub_description || "",
-        }));
-        setBlogSubs(subs);
-        setExistingSubIds(subs.map((sub) => sub.id));
-        setSubErrors(Array(subs.length).fill({}));
-      }
-
-      // Reset related blogs only after blogOptions is populated
-      if (blogOptions.length > 0 && data.web_blog_relateds?.length) {
-        const relatedIds = data.web_blog_relateds.map(
-          (rel) => rel.blog_related_id
-        );
-        setExistingRelatedIds(relatedIds);
-        const selected = blogOptions.filter((blog) =>
-          relatedIds.includes(blog.value)
-        );
-        setSelectedRelatedBlogs(selected);
-      } else {
-        setSelectedRelatedBlogs([]);
-        setExistingRelatedIds([]);
-      }
-    }
-
+    setFormData({
+      // blog_heading: "",
+      blog_meta_title: "",
+      blog_meta_description: "",
+      blog_meta_keywords: "",
+      blog_course: "",
+      blog_index: "",
+      blog_created: new Date().toISOString().split("T")[0],
+      blog_images_alt: "",
+      blog_slug: "",
+    });
+    setBlogSubs([
+      {
+        blog_sub_heading: "",
+        blog_sub_heading_tag: "",
+        blog_sub_description: "",
+      },
+    ]);
+    setSelectedRelatedBlogs([]);
     setSelectedFile(null);
+    setPreviewImage(null);
     setImageDimensions({ width: 0, height: 0 });
     setErrors({});
+    setSubErrors([]);
     const fileInput = document.getElementById("blog_images");
     if (fileInput) fileInput.value = "";
   };
 
-  if (isError) return <ApiErrorPage onRetry={() => refetch()} />;
   return (
     <div className="max-w-full mx-auto">
-      {isLoading && <LoadingBar />}
       <PageHeader
         icon={User}
-        title=" Edit Blog"
-        description="Edit your blog with live preview"
+        title="Blog Builder"
+        description="Create your blog with live preview"
         rightContent={
           <div className="flex justify-end gap-2 pt-4">
             <div className="flex gap-3 justify-end">
@@ -705,10 +449,10 @@ const EditBlog = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
+                    Submiting...
                   </>
                 ) : (
-                  "Update Blog"
+                  "Submit Blog"
                 )}
               </Button>
             </div>
@@ -728,12 +472,10 @@ const EditBlog = () => {
               </span>
             </Button>
             <Button
-              onClick={() => navigate("/blog-list")}
               variant="outline"
-              size="sm"
-              className="flex items-center gap-1 flex-shrink-0"
+              type="button"
+              onClick={() => navigate(-1)}
             >
-              <ArrowLeft className="w-3 h-3" />
               Back
             </Button>
           </div>
@@ -744,7 +486,7 @@ const EditBlog = () => {
           <Card>
             <CardContent className="p-4">
               <Tabs defaultValue="basic" className="w-full">
-                <TabsList className="grid grid-cols-4">
+                <TabsList className="grid grid-cols-3">
                   <TabsTrigger
                     value="basic"
                     className="flex items-center gap-2"
@@ -758,10 +500,6 @@ const EditBlog = () => {
                   >
                     <BookOpen className="h-4 w-4" />
                     Content
-                  </TabsTrigger>
-                  <TabsTrigger value="faq" className="flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    Faq
                   </TabsTrigger>
                   <TabsTrigger
                     value="related"
@@ -833,7 +571,6 @@ const EditBlog = () => {
                         }`}
                       />
                     </div>
-
                     {/* <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Type className="h-4 w-4" />
@@ -903,7 +640,7 @@ const EditBlog = () => {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2">
                         <Type className="h-4 w-4" />
-                        BLog Index
+                        Blog Index
                       </Label>
 
                       <GroupButton
@@ -924,6 +661,7 @@ const EditBlog = () => {
                           <BookOpen className="h-4 w-4" />
                           Course *
                         </Label>
+
                         <Select
                           value={formData.blog_course}
                           onValueChange={(v) =>
@@ -992,28 +730,6 @@ const EditBlog = () => {
                           </p>
                         )}
                       </div>
-
-                      <div className="flex items-center h-full ml-4">
-                        <div className="flex flex-col gap-1.5">
-                          <label className="text-sm font-medium">
-                            Status *
-                          </label>
-
-                          <GroupButton
-                            className="w-fit"
-                            value={formData.blog_status}
-                            onChange={(value) =>
-                              setFormData({ ...formData, blog_status: value })
-                            }
-                            options={[
-                              { label: "Active", value: "Active" },
-                              { label: "Inactive", value: "Inactive" },
-                              { label: "Draft", value: "Draft" },
-                              { label: "Scheduled", value: "Scheduled" },
-                            ]}
-                          />
-                        </div>
-                      </div>
                     </div>
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-sm">
@@ -1027,7 +743,7 @@ const EditBlog = () => {
                         </AlertDescription>
                       </Alert>
 
-                      {previewImage || selectedFile ? (
+                      {selectedFile ? (
                         <div className="border border-dashed rounded-md p-3">
                           <div className="relative aspect-[1200/628] bg-gray-100 rounded overflow-hidden">
                             <img
@@ -1047,21 +763,12 @@ const EditBlog = () => {
                           </div>
 
                           <div className="mt-2 text-xs flex items-center gap-3 text-center text-gray-600">
-                            {selectedFile ? (
-                              <>
-                                <p className="truncate font-medium">
-                                  {selectedFile.name}
-                                </p>
-                                <p>
-                                  {(selectedFile.size / 1024 / 1024).toFixed(2)}{" "}
-                                  MB
-                                </p>
-                              </>
-                            ) : (
-                              <p className="truncate font-medium">
-                                Existing Image: {formData.blog_images}
-                              </p>
-                            )}
+                            <p className="truncate font-medium">
+                              {selectedFile.name}
+                            </p>
+                            <p>
+                              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
                             {imageDimensions.width > 0 && (
                               <p
                                 className={
@@ -1117,14 +824,7 @@ const EditBlog = () => {
                     <Card key={index} className="border">
                       <CardContent className="px-3 py-1">
                         <div className="flex justify-between items-center mb-1">
-                          <h4 className="font-medium">
-                            Section {index + 1}{" "}
-                            {sub.id && (
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                Existing
-                              </Badge>
-                            )}
-                          </h4>
+                          <h4 className="font-medium">Section {index + 1}</h4>
 
                           <Button
                             type="button"
@@ -1201,6 +901,7 @@ const EditBlog = () => {
                               )}
                             </div>
                           </div>
+
                           <div className="space-y-1">
                             <Label>Sub-description *</Label>
                             <div
@@ -1292,7 +993,6 @@ const EditBlog = () => {
                       <Plus className="h-4 w-4" />
                       Add Section
                     </Button>
-
                     <Select
                       value={selectedGalleryImage?.value}
                       onValueChange={(value) => {
@@ -1324,17 +1024,7 @@ const EditBlog = () => {
                     </Select>
                   </div>
                 </TabsContent>
-                <TabsContent value="faq" className="space-y-4">
-                  <BlogFaqForm
-                    isEdit={true}
-                    faqItems={faqItems}
-                    error={error}
-                    addFaq={addFaq}
-                    removeFaq={removeFaq}
-                    moveFaq={moveFaq}
-                    handleItemChange={handleItemChange}
-                  />
-                </TabsContent>
+
                 <TabsContent value="related" className="space-y-4">
                   <div className="space-y-2">
                     <Label className="flex items-center gap-2">
@@ -1364,7 +1054,7 @@ const EditBlog = () => {
                               Selected Blogs ({selectedRelatedBlogs.length})
                             </Label>
                             <div className="space-y-2">
-                              {selectedRelatedBlogs.map((blog, index) => (
+                              {selectedRelatedBlogs.map((blog) => (
                                 <div
                                   key={blog.value}
                                   className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -1376,54 +1066,16 @@ const EditBlog = () => {
                                     <p className="text-xs text-gray-500">
                                       Slug: {blog.slug}
                                     </p>
-                                    {existingRelatedIds.includes(
-                                      blog.value
-                                    ) && (
-                                      <Badge
-                                        variant="outline"
-                                        className="mt-1 text-xs"
-                                      >
-                                        Existing
-                                      </Badge>
-                                    )}
                                   </div>
-                                  <div className="flex items-center gap-2">
-                                    <Badge
-                                      variant={
-                                        blog.status === "Active"
-                                          ? "default"
-                                          : "secondary"
-                                      }
-                                    >
-                                      {blog.status}
-                                    </Badge>
-
-                                    <Button
-                                      type="button"
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => {
-                                        const relation =
-                                          blogData?.data?.web_blog_relateds?.find(
-                                            (rel) =>
-                                              rel.blog_related_id === blog.value
-                                          );
-                                        if (relation) {
-                                          setDeleteItem({
-                                            type: "related",
-                                            id: relation.id,
-                                            index,
-                                          });
-                                          setDeleteDialogOpen(true);
-                                        }
-                                      }}
-                                      disabled={
-                                        !existingRelatedIds.includes(blog.value)
-                                      }
-                                    >
-                                      <Trash2 className="h-4 w-4 text-red-500" />
-                                    </Button>
-                                  </div>
+                                  <Badge
+                                    variant={
+                                      blog.status === "Active"
+                                        ? "default"
+                                        : "secondary"
+                                    }
+                                  >
+                                    {blog.status}
+                                  </Badge>
                                 </div>
                               ))}
                             </div>
@@ -1449,13 +1101,16 @@ const EditBlog = () => {
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-semibold">Live Preview</h3>
-                    <BlogPreview
-                      formData={formData}
-                      blogSubs={blogSubs}
-                      selectedRelatedBlogs={selectedRelatedBlogs}
-                      previewImage={previewImage}
-                      imageDimensions={imageDimensions}
-                    />
+
+                    {previewImage && (
+                      <BlogPreview
+                        formData={formData}
+                        blogSubs={blogSubs}
+                        selectedRelatedBlogs={selectedRelatedBlogs}
+                        previewImage={previewImage}
+                        imageDimensions={imageDimensions}
+                      />
+                    )}
                   </div>
                   <Badge variant="outline" className="bg-blue-50 text-blue-700">
                     Real-time
@@ -1549,7 +1204,13 @@ const EditBlog = () => {
                       <div className="flex items-center justify-between text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          <span>{formData.blog_created || "Date not set"}</span>
+                          <span>
+                            {formData.blog_created
+                              ? moment(formData.blog_created).format(
+                                  "DD MMM YYYY"
+                                )
+                              : "Date not set"}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <BookOpen className="h-3 w-3" />
@@ -1561,39 +1222,6 @@ const EditBlog = () => {
                       </div>
                     </div>
                   </div>
-
-                  {previewImage && selectedFile && (
-                    <Alert
-                      className={`${
-                        imageDimensions.width === 1200 &&
-                        imageDimensions.height === 628
-                          ? "bg-green-50 border-green-200"
-                          : "bg-yellow-50 border-yellow-200"
-                      }`}
-                    >
-                      <AlertCircle
-                        className={`h-4 w-4 ${
-                          imageDimensions.width === 1200 &&
-                          imageDimensions.height === 628
-                            ? "text-green-600"
-                            : "text-yellow-600"
-                        }`}
-                      />
-                      <AlertDescription className="text-sm">
-                        {imageDimensions.width === 1200 &&
-                        imageDimensions.height === 628 ? (
-                          <span className="text-green-700">
-                            ✓ Image dimensions are correct (1200×628)
-                          </span>
-                        ) : (
-                          <span className="text-yellow-700">
-                            ⚠ Current: {imageDimensions.width}×
-                            {imageDimensions.height}. Required: 1200×628
-                          </span>
-                        )}
-                      </AlertDescription>
-                    </Alert>
-                  )}
 
                   {blogSubs.map((sub, index) => (
                     <div key={index} className="border rounded-lg p-4">
@@ -1635,11 +1263,11 @@ const EditBlog = () => {
                   )}
 
                   <div className="grid grid-cols-4 gap-2 text-center">
-                    {/* <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">
+                    {/* <div className="bg-gray-50 p-3 rounded-lg"> */}
+                      {/* <p className="text-2xl font-bold text-gray-900">
                         {formData.blog_heading.length}
-                      </p>
-                      <p className="text-xs text-gray-500">Chars</p>
+                      </p> */}
+                      {/* <p className="text-xs text-gray-500">Chars</p>
                     </div> */}
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
@@ -1649,7 +1277,7 @@ const EditBlog = () => {
                     </div>
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
-                        {previewImage ? "✓" : "✗"}
+                        {selectedFile ? "✓" : "✗"}
                       </p>
                       <p className="text-xs text-gray-500">Image</p>
                     </div>
@@ -1658,7 +1286,7 @@ const EditBlog = () => {
                         imageDimensions.width === 1200 &&
                         imageDimensions.height === 628
                           ? "bg-green-50"
-                          : previewImage
+                          : selectedFile
                           ? "bg-yellow-50"
                           : "bg-gray-50"
                       }`}
@@ -1667,7 +1295,7 @@ const EditBlog = () => {
                         {imageDimensions.width === 1200 &&
                         imageDimensions.height === 628
                           ? "✓"
-                          : previewImage
+                          : selectedFile
                           ? "⚠"
                           : "-"}
                       </p>
@@ -1680,34 +1308,8 @@ const EditBlog = () => {
           </div>
         </div>
       </div>
-
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="text-red-600">
-              {deleteItem.type === "sub"
-                ? "Delete Sub-section"
-                : "Remove Related Blog"}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteItem.type === "sub"
-                ? "Are you sure you want to delete this sub-section? This action cannot be undone."
-                : "Are you sure you want to remove this related blog? This action cannot be undone."}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 };
 
-export default EditBlog;
+export default CreateBlog;

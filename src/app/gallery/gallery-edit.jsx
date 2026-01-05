@@ -18,7 +18,7 @@ import { Edit, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
-const GalleryEdit = ({ galleryId, onSuccess }) => {
+const GalleryEdit = ({ galleryId }) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     gallery_status: "",

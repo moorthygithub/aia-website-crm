@@ -1,5 +1,6 @@
 import ApiErrorPage from "@/components/api-error/api-error";
 import PageHeader from "@/components/common/page-header";
+import { GroupButton } from "@/components/group-button";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import { FAQ_API, PAGE_TWO_API } from "@/constants/apiConstants";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
@@ -25,471 +28,366 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 
-const CreateFaq = () => {
-  const { trigger, loading: isSubmitting } = useApiMutation();
+/* ---------------- CONSTANTS ---------------- */
+
+const EMPTY_FAQ = {
+  id: null,
+  faq_sort: "",
+  faq_heading: "",
+  faq_que: "",
+  faq_ans: "",
+  faq_status: "Active",
+};
+
+/* ---------------- COMPONENT ---------------- */
+
+const FaqForm = () => {
+  const { id } = useParams();
+  const isEdit = Boolean(id);
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { trigger, loading } = useApiMutation();
 
-  const [faqItems, setFaqItems] = useState([
-    {
-      faq_sort: "",
-      faq_for: "",
-      faq_heading: "",
-      faq_que: "",
-      faq_ans: "",
-    },
-  ]);
+  const [faqFor, setFaqFor] = useState({
+    faq_for: "",
+    faq_status: "Active",
+  });
 
+  const [faqItems, setFaqItems] = useState([{ ...EMPTY_FAQ }]);
   const [errors, setErrors] = useState([]);
-  const [pageTwoOptions, setPageTwoOptions] = useState([]);
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [pageOptions, setPageOptions] = useState([]);
 
   const {
-    data: pageData,
-    isLoading: isPageLoadingApi,
-    isError: isPageError,
-    refetch: refetchPage,
-  } = useGetApiMutation({
+    trigger: fetchfaq,
+    loading: isLoading,
+    error: isError,
+  } = useApiMutation();
+
+  const { data: pageData } = useGetApiMutation({
     url: PAGE_TWO_API.dropdown,
-    queryKey: ["page-two-drop"],
+    queryKey: ["page-two"],
   });
 
   useEffect(() => {
-    if (pageData?.data) {
-      setPageTwoOptions(pageData.data);
-      setIsPageLoading(false);
-    }
-  }, [pageData]);
+    if (!isEdit) return;
+
+    const fetchData = async () => {
+      try {
+        const res = await fetchfaq({
+          url: FAQ_API.byId(id),
+        });
+        const d = res?.data || {};
+        setFaqFor({
+          faq_for: d.faq_for,
+          faq_status: d.faq_status,
+        });
+
+        setFaqItems(
+          d.web_faq_subs.map((s) => ({
+            id: s.id,
+            faq_sort: s.faq_sort ?? "",
+            faq_heading: s.faq_heading ?? "",
+            faq_que: s.faq_que ?? "",
+            faq_ans: s.faq_ans ?? "",
+            faq_status: s.faq_status ?? "Active",
+          }))
+        );
+      } catch (err) {
+        toast.error("Failed to load country data");
+      }
+    };
+
+    fetchData();
+  }, [isEdit, id]);
 
   useEffect(() => {
-    if (isPageError) {
-      setIsPageLoading(false);
-    }
-  }, [isPageError]);
+    if (pageData?.data) setPageOptions(pageData.data);
+  }, [pageData]);
+  /* ---------------- HANDLERS ---------------- */
 
-  const handleInputChange = (index, field, value) => {
-    const updatedItems = [...faqItems];
-    updatedItems[index][field] = value;
-    setFaqItems(updatedItems);
+  const handleItemChange = (i, field, value) => {
+    const copy = [...faqItems];
+    copy[i][field] = value;
+    setFaqItems(copy);
 
-    // Clear error for this field
-    if (errors[index] && errors[index][field]) {
-      const updatedErrors = [...errors];
-      updatedErrors[index][field] = "";
-      setErrors(updatedErrors);
+    if (errors[i]?.[field]) {
+      const errCopy = [...errors];
+      errCopy[i][field] = "";
+      setErrors(errCopy);
     }
   };
 
-  const addNewFaq = () => {
-    setFaqItems([
-      ...faqItems,
-      {
-        faq_sort: "",
-        faq_for: "",
-        faq_heading: "",
-        faq_que: "",
-        faq_ans: "",
-      },
-    ]);
+  const addFaq = () => setFaqItems([...faqItems, { ...EMPTY_FAQ }]);
+
+  const removeFaq = (i) => {
+    if (faqItems.length === 1) return;
+    setFaqItems(faqItems.filter((_, idx) => idx !== i));
+    setErrors(errors.filter((_, idx) => idx !== i));
   };
 
-  const removeFaq = (index) => {
-    if (faqItems.length === 1) {
-      toast.error("At least one FAQ item is required");
-      return;
+  const moveFaq = (i, dir) => {
+    const copy = [...faqItems];
+    const swap = dir === "up" ? i - 1 : i + 1;
+    [copy[i], copy[swap]] = [copy[swap], copy[i]];
+    setFaqItems(copy);
+  };
+
+
+  const validate = () => {
+    let valid = true;
+    const err = [];
+
+    if (!faqFor.faq_for) {
+      toast.error("Page is required");
+      return false;
     }
 
-    const updatedItems = faqItems.filter((_, i) => i !== index);
-    setFaqItems(updatedItems);
-
-    // Remove corresponding errors
-    const updatedErrors = errors.filter((_, i) => i !== index);
-    setErrors(updatedErrors);
-  };
-
-  const moveFaqUp = (index) => {
-    if (index === 0) return;
-
-    const updatedItems = [...faqItems];
-    const temp = updatedItems[index];
-    updatedItems[index] = updatedItems[index - 1];
-    updatedItems[index - 1] = temp;
-
-    // Update sort order
-    updatedItems.forEach((item, idx) => {
-      item.faq_sort = (idx + 1).toString();
+    faqItems.forEach((f, i) => {
+      const e = {};
+      if (!f.faq_sort) e.faq_sort = "Required";
+      if (!f.faq_que) e.faq_que = "Required";
+      if (!f.faq_ans) e.faq_ans = "Required";
+      if (Object.keys(e).length) valid = false;
+      err[i] = e;
     });
 
-    setFaqItems(updatedItems);
+    setErrors(err);
+    return valid;
   };
 
-  const moveFaqDown = (index) => {
-    if (index === faqItems.length - 1) return;
-
-    const updatedItems = [...faqItems];
-    const temp = updatedItems[index];
-    updatedItems[index] = updatedItems[index + 1];
-    updatedItems[index + 1] = temp;
-
-    // Update sort order
-    updatedItems.forEach((item, idx) => {
-      item.faq_sort = (idx + 1).toString();
-    });
-
-    setFaqItems(updatedItems);
-  };
-
-  const validateForm = () => {
-    const newErrors = [];
-    let isValid = true;
-
-    faqItems.forEach((item, index) => {
-      const itemErrors = {};
-
-      if (!item.faq_sort.trim()) {
-        itemErrors.faq_sort = "Sort order is required";
-        isValid = false;
-      } else if (!/^\d+$/.test(item.faq_sort)) {
-        itemErrors.faq_sort = "Sort order must be a number";
-        isValid = false;
-      }
-
-      if (!item.faq_for.trim()) {
-        itemErrors.faq_for = "Page is required";
-        isValid = false;
-      }
-
-
-      if (!item.faq_que.trim()) {
-        itemErrors.faq_que = "Question is required";
-        isValid = false;
-      }
-
-      if (!item.faq_ans.trim()) {
-        itemErrors.faq_ans = "Answer is required";
-        isValid = false;
-      }
-
-      newErrors.push(itemErrors);
-    });
-
-    setErrors(newErrors);
-    return isValid;
-  };
+  /* ---------------- SUBMIT ---------------- */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
 
-    if (!validateForm()) {
-      toast.error("Please fix the errors in the form");
-      return;
-    }
-
-    const formData = {
-      faq: faqItems.map((item) => ({
-        faq_sort: item.faq_sort,
-        faq_for: item.faq_for,
-        faq_heading: item.faq_heading,
-        faq_que: item.faq_que,
-        faq_ans: item.faq_ans,
+    const payload = {
+      faq_for: faqFor.faq_for,
+      faq_status: faqFor.faq_status,
+      faq: faqItems.map((f) => ({
+        id: f.id,
+        faq_sort: f.faq_sort,
+        faq_heading: f.faq_heading,
+        faq_que: f.faq_que,
+        faq_ans: f.faq_ans,
+        faq_status: f.faq_status,
       })),
     };
 
     try {
       const res = await trigger({
-        url: FAQ_API.create,
-        method: "post",
-        data: formData,
+        url: isEdit ? FAQ_API.updateById(id) : FAQ_API.create,
+        method: isEdit ? "put" : "post",
+        data: payload,
       });
 
-      if (res?.code === 201) {
-        toast.success(res?.msg || "FAQs created successfully");
-
-        setFaqItems([
-          {
-            faq_sort: "",
-            faq_for: "",
-            faq_heading: "",
-            faq_que: "",
-            faq_ans: "",
-          },
-        ]);
-        setErrors([]);
-
+      if (res?.code === 200 || res?.code === 201) {
+        toast.success(res.msg || "Success");
         queryClient.invalidateQueries(["faq-list"]);
         navigate("/faq-list");
-      } else {
-        toast.error(res?.msg || "Failed to create FAQs");
       }
-    } catch (error) {
-      const errors = error?.response?.data?.msg;
-      toast.error(errors || "Something went wrong");
-
-      console.error("FAQ creation error:", error);
+    } catch {
+      toast.error("Something went wrong");
     }
   };
+  const syncAllSubStatus = (status) => {
+    setFaqItems((prev) =>
+      prev.map((item) => ({
+        ...item,
+        faq_status: status,
+      }))
+    );
+  };
 
-  if (isPageLoading) {
-    return <LoadingBar />;
-  }
+  /* ---------------- UI ---------------- */
 
-  if (isPageError) {
-    return <ApiErrorPage onRetry={() => refetchPage()} />;
-  }
+  if (isEdit && isLoading) return <LoadingBar />;
+  if (isEdit && isError) return <ApiErrorPage />;
 
   return (
-    <div className="max-w-full mx-auto">
+    <div>
       <PageHeader
         icon={HelpCircle}
-        title="Add New FAQs"
-        description="Fill in the details below to create new FA"
+        title={isEdit ? "Edit FAQ" : "Create FAQs"}
         rightContent={
-          <div className="flex justify-end gap-2 pt-4">
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => navigate(-1)}
-            >
-              Back
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => navigate(-1)}>
+            Back
+          </Button>
         }
       />
+
       <Card className="mt-2">
-        <CardContent className="p-2">
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              {faqItems.map((item, index) => (
-                <div
-                  key={index}
-                  className="border rounded-lg px-4 py-1 bg-white"
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div
+              className={`grid gap-3 ${
+                isEdit ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1"
+              }`}
+            >
+              <div className={isEdit ? "md:col-span-2" : ""}>
+                <Label>Page *</Label>
+                <Select
+                  value={faqFor.faq_for}
+                  onValueChange={(v) =>
+                    setFaqFor((p) => ({ ...p, faq_for: v }))
+                  }
                 >
-                  <div className="flex items-center justify-between ">
-                    <h3 className="text-sm font-medium">
-                      FAQ Item {index + 1}
-                    </h3>
-                    <div className="flex items-center gap-2">
-                      {index > 0 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => moveFaqUp(index)}
-                        >
-                          <ChevronUp className="h-4 w-4" />
-                        </Button>
-                      )}
-                      {index < faqItems.length - 1 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => moveFaqDown(index)}
-                        >
-                          <ChevronDown className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeFaq(index)}
-                        disabled={faqItems.length === 1}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select page" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pageOptions.map((p) => (
+                      <SelectItem key={p.page_two_url} value={p.page_two_url}>
+                        {p.page_two_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <div className="">
-                      <Label
-                        htmlFor={`faq_sort_${index}`}
-                        className="text-sm font-medium"
-                      >
-                        Sort Order *
-                      </Label>
-                      <Input
-                        id={`faq_sort_${index}`}
-                        type="number"
-                        min="1"
-                        placeholder="Enter sort order"
-                        value={item.faq_sort}
-                        onChange={(e) =>
-                          handleInputChange(index, "faq_sort", e.target.value)
-                        }
-                        className={
-                          errors[index]?.faq_sort ? "border-red-500" : ""
-                        }
-                      />
-                      {errors[index]?.faq_sort && (
-                        <p className="text-sm text-red-500">
-                          {errors[index].faq_sort}
-                        </p>
-                      )}
-                    </div>
+              {isEdit && (
+                <div className="mt-2">
+                  <Label className="mr-4">Status</Label>
+                  <GroupButton
+                    className="w-fit"
+                    value={faqFor.faq_status}
+                    onChange={(v) => {
+                      setFaqFor((p) => ({ ...p, faq_status: v }));
+                      syncAllSubStatus(v);
+                    }}
+                    options={[
+                      { label: "Active", value: "Active" },
+                      { label: "Inactive", value: "Inactive" },
+                    ]}
+                  />
+                </div>
+              )}
+            </div>
 
-                    <div className="">
-                      <Label
-                        htmlFor={`faq_for_${index}`}
-                        className="text-sm font-medium"
-                      >
-                        Page *
-                      </Label>
-                      <Select
-                        value={item.faq_for}
-                        onValueChange={(value) =>
-                          handleInputChange(index, "faq_for", value)
-                        }
-                      >
-                        <SelectTrigger
-                          className={
-                            errors[index]?.faq_for ? "border-red-500" : ""
+            {/* FAQ ITEMS */}
+            {faqItems.map((item, i) => (
+              <div key={i} className="border rounded-lg p-3 space-y-2">
+                <div className="flex justify-between">
+                  <h4 className="font-medium">FAQ {i + 1}</h4>
+                  <div className="flex gap-2">
+                    {isEdit && (
+                      <div className="flex items-center gap-1">
+                        <span className="text-xs text-muted-foreground">
+                          {item.faq_status === "Active" ? "Active" : "Inactive"}
+                        </span>
+
+                        <Switch
+                          checked={item.faq_status === "Active"}
+                          onCheckedChange={(checked) =>
+                            handleItemChange(
+                              i,
+                              "faq_status",
+                              checked ? "Active" : "Inactive"
+                            )
                           }
-                        >
-                          <SelectValue placeholder="Select page" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {pageTwoOptions.map((page) => (
-                            <SelectItem
-                              key={page.page_two_url}
-                              value={page.page_two_url}
-                            >
-                              {page.page_two_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {errors[index]?.faq_for && (
-                        <p className="text-sm text-red-500">
-                          {errors[index].faq_for}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="">
-                      <Label
-                        htmlFor={`faq_heading_${index}`}
-                        className="text-sm font-medium  "
-                      >
-                        <span> Heading </span>
-                        <span className="text-sm text-gray-500"></span>
-                      </Label>
-                      <Input
-                        id={`faq_heading_${index}`}
-                        placeholder="Enter FAQ heading"
-                        value={item.faq_heading}
-                        onChange={(e) =>
-                          handleInputChange(
-                            index,
-                            "faq_heading",
-                            e.target.value
-                          )
-                        }
-                        className={
-                          errors[index]?.faq_heading ? "border-red-500" : ""
-                        }
-                      />
-                      <div className="flex justify-between">
-                        {errors[index]?.faq_heading && (
-                          <p className="text-sm text-red-500">
-                            {errors[index].faq_heading}
-                          </p>
-                        )}
+                        />
                       </div>
-                    </div>
-
-                    <div className=" ">
-                      <Label
-                        htmlFor={`faq_que_${index}`}
-                        className="text-sm font-medium"
-                      >
-                        <span> Question *</span>{" "}
-                        <span className="text-sm text-gray-500"></span>
-                      </Label>
-                      <textarea
-                        id={`faq_que_${index}`}
-                        placeholder="Enter FAQ question"
-                        value={item.faq_que}
-                        onChange={(e) =>
-                          handleInputChange(index, "faq_que", e.target.value)
-                        }
-                        className={`w-full min-h-[100px] p-2 border rounded-md ${
-                          errors[index]?.faq_que
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        rows="3"
+                    )}
+                    {i > 0 && (
+                      <ChevronUp
+                        onClick={() => moveFaq(i, "up")}
+                        className="cursor-pointer h-5 w-5"
                       />
-                      <div className="flex justify-between">
-                        {errors[index]?.faq_que && (
-                          <p className="text-sm text-red-500">
-                            {errors[index].faq_que}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className=" md:col-span-2">
-                      <Label
-                        htmlFor={`faq_ans_${index}`}
-                        className="text-sm font-medium"
-                      >
-                        <span> Answer *</span>{" "}
-                        <span className="text-sm text-gray-500"></span>
-                      </Label>
-                      <textarea
-                        id={`faq_ans_${index}`}
-                        placeholder="Enter FAQ answer"
-                        value={item.faq_ans}
-                        onChange={(e) =>
-                          handleInputChange(index, "faq_ans", e.target.value)
-                        }
-                        className={`w-full min-h-[100px] p-2 border rounded-md ${
-                          errors[index]?.faq_ans
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        }`}
-                        rows="3"
+                    )}
+                    {i < faqItems.length - 1 && (
+                      <ChevronDown
+                        onClick={() => moveFaq(i, "down")}
+                        className="cursor-pointer h-5 w-5"
                       />
-                      <div className="flex justify-between">
-                        {errors[index]?.faq_ans && (
-                          <p className="text-sm text-red-500">
-                            {errors[index].faq_ans}
-                          </p>
-                        )}
-                      </div>
-                    </div>
+                    )}
+                    <Trash2
+                      className="cursor-pointer text-red-500 !h-5 !w-5"
+                      onClick={() => removeFaq(i)}
+                    />
                   </div>
                 </div>
-              ))}
 
-              <div className="pt-4 flex gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={addNewFaq}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add Another FAQ
-                </Button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  <div>
+                    <Input
+                      placeholder="Sort Order *"
+                      value={item.faq_sort}
+                      onChange={(e) =>
+                        handleItemChange(i, "faq_sort", e.target.value)
+                      }
+                      className={errors[i]?.faq_sort && "border-red-500"}
+                    />
+                    {errors[i]?.faq_sort && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors[i].faq_sort}
+                      </p>
+                    )}
+                  </div>
+                  <Input
+                    placeholder="Heading"
+                    value={item.faq_heading}
+                    onChange={(e) =>
+                      handleItemChange(i, "faq_heading", e.target.value)
+                    }
+                  />
 
-                <Button type="submit" className="px-8" disabled={isSubmitting}>
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating...
-                    </>
-                  ) : (
-                    "Create FAQs"
-                  )}
-                </Button>
+                  <div>
+                    <Textarea
+                      placeholder="Question *"
+                      value={item.faq_que}
+                      onChange={(e) =>
+                        handleItemChange(i, "faq_que", e.target.value)
+                      }
+                      className={errors[i]?.faq_que && "border-red-500"}
+                    />
+                    {errors[i]?.faq_que && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors[i].faq_que}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Textarea
+                      placeholder="Answer *"
+                      value={item.faq_ans}
+                      onChange={(e) =>
+                        handleItemChange(i, "faq_ans", e.target.value)
+                      }
+                      className={errors[i]?.faq_ans && "border-red-500"}
+                    />
+                    {errors[i]?.faq_ans && (
+                      <p className="text-xs text-red-500 mt-1">
+                        {errors[i].faq_ans}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            ))}
+
+            {/* {!isEdit && ( */}
+              <Button type="button" variant="outline" onClick={addFaq}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add FAQ
+              </Button>
+            {/* // )} */}
+
+            <Button type="submit" disabled={loading} className="!mt-1 ml-3">
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin mr-2 " />
+                  Saving...
+                </>
+              ) : isEdit ? (
+                "Update FAQ"
+              ) : (
+                "Create FAQs"
+              )}
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -497,4 +395,4 @@ const CreateFaq = () => {
   );
 };
 
-export default CreateFaq;
+export default FaqForm;
