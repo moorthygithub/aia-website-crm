@@ -411,7 +411,7 @@ const StudentForm = () => {
             <div>
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-gray-700">
-                  Country
+                  Country - City
                 </label>
 
                 <button
@@ -429,7 +429,7 @@ const StudentForm = () => {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Country" />
+                  <SelectValue placeholder="Select Country - City" />
                 </SelectTrigger>
                 <SelectContent>
                   {countriesData?.data?.map((c) => (
