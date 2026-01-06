@@ -75,7 +75,6 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
 
   const validate = () => {
     const newErrors = {};
-    if (!data.heading.trim()) newErrors.heading = "Required";
     if (!data.alt.trim()) newErrors.alt = "Required";
     if (!preview.popup_image && !data.popup_image)
       newErrors.popup_image = "Image is required";
@@ -153,7 +152,7 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
           <div>
             <ImageUpload
               id="popup_image"
-              label="YouTube Image"
+              label="PopUp Image"
               required
               selectedFile={data.popup_image}
               previewImage={preview.popup_image}
@@ -184,16 +183,14 @@ const PopupEdit = ({ isOpen, onClose, popupId, refetch }) => {
           </div>
 
           <div>
-            <label className="text-sm font-medium">Heading *</label>
+            <label className="text-sm font-medium">Heading </label>
             <Textarea
               value={data.heading}
               onChange={(e) => setData({ ...data, heading: e.target.value })}
               className="mt-1 text-sm h-16"
               placeholder="Popup heading"
             />
-            {errors.heading && (
-              <p className="text-red-500 text-xs mt-1">{errors.heading}</p>
-            )}
+        
           </div>
 
           <div>

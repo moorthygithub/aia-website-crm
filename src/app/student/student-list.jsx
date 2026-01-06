@@ -8,6 +8,8 @@ import { STUDENT_API } from "@/constants/apiConstants";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 import { Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useMemo } from "react";
 
 const StudentList = () => {
   const navigate = useNavigate();
@@ -17,9 +19,14 @@ const StudentList = () => {
     queryKey: ["student-list"],
   });
 
+  const list = data?.data || [];
   const IMAGE_FOR = "Student";
   const studentBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
+
+  const courseGroups = useMemo(() => {
+    return [...new Set(list.map((item) => item.student_course))];
+  }, [list]);
 
   const columns = [
     {
@@ -28,7 +35,6 @@ const StudentList = () => {
       cell: ({ row }) => {
         const fileName = row.original.student_image;
         if (!fileName) return "-";
-
         return (
           <ImageCell
             src={`${studentBaseUrl}${fileName}`}
@@ -44,7 +50,6 @@ const StudentList = () => {
       cell: ({ row }) => {
         const fileName = row.original.student_certificate_image;
         if (!fileName) return "-";
-
         return (
           <ImageCell
             src={`${studentBaseUrl}${fileName}`}
@@ -60,7 +65,6 @@ const StudentList = () => {
       cell: ({ row }) => {
         const fileName = row.original.student_youtube_image;
         if (!fileName) return "-";
-
         return (
           <ImageCell
             src={`${studentBaseUrl}${fileName}`}
@@ -71,8 +75,7 @@ const StudentList = () => {
       },
     },
     { header: "Sort", accessorKey: "student_sort" },
-        { header: "UID", accessorKey: "student_uid" },
-
+    { header: "UID", accessorKey: "student_uid" },
     { header: "Name", accessorKey: "student_name" },
     { header: "Course", accessorKey: "student_course" },
     { header: "Designation", accessorKey: "student_designation" },
@@ -80,19 +83,16 @@ const StudentList = () => {
       header: "Status",
       accessorKey: "student_status",
       cell: ({ row }) => {
-        const status = row.original.student_status;
-        const isActive = status === "Active";
-
+        const isActive = row.original.student_status === "Active";
         return (
           <span
-            className={`px-3 py-1 text-xs font-medium rounded-full inline-block
-              ${
-                isActive
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
+            className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+              isActive
+                ? "bg-green-100 text-green-700"
+                : "bg-red-100 text-red-700"
+            }`}
           >
-            {status}
+            {row.original.student_status}
           </span>
         );
       },
@@ -115,16 +115,51 @@ const StudentList = () => {
   if (isError) return <ApiErrorPage onRetry={refetch} />;
 
   return (
-    <DataTable
-      data={data?.data || []}
-      columns={columns}
-      pageSize={10}
-      searchPlaceholder="Search student..."
-      addButton={{
-        to: "/student/create",
-        label: "Add Student",
-      }}
-    />
+    <div className="space-y-4">
+      <Tabs defaultValue="ALL">
+        <TabsList>
+          <TabsTrigger value="ALL">All</TabsTrigger>
+          {courseGroups.map((course) => (
+            <TabsTrigger key={course} value={course}>
+              {course}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <TabsContent value="ALL">
+          <DataTable
+            data={list}
+            columns={columns}
+            pageSize={10}
+            searchPlaceholder="Search student..."
+            addButton={{
+              to: "/student/create",
+              label: "Add Student",
+            }}
+          />
+        </TabsContent>
+
+        {courseGroups.map((course) => {
+          const filteredData = list.filter(
+            (item) => item.student_course === course
+          );
+          return (
+            <TabsContent key={course} value={course}>
+              <DataTable
+                data={filteredData}
+                columns={columns}
+                pageSize={10}
+                searchPlaceholder={`Search ${course} students...`}
+                addButton={{
+                  to: "/student/create",
+                  label: "Add Student",
+                }}
+              />
+            </TabsContent>
+          );
+        })}
+      </Tabs>
+    </div>
   );
 };
 

@@ -42,6 +42,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BlogFaqForm from "./blog-faq";
+import certifications from "@/constants/certifications.json";
+
 const EMPTY_FAQ = {
   id: null,
   faq_sort: "",
@@ -60,6 +62,7 @@ const CreateBlog = () => {
     url: COURSE_API.courses,
     queryKey: ["courses-dropdown"],
   });
+
   const [formData, setFormData] = useState({
     blog_meta_title: "",
     blog_meta_description: "",
@@ -83,6 +86,7 @@ const CreateBlog = () => {
   const [faqItems, setFaqItems] = useState([{ ...EMPTY_FAQ }]);
   const [error, setError] = useState([]);
 
+  const [selectedBlogCategories, setSelectedBlogCategories] = useState([]);
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(null);
   const [errors, setErrors] = useState({});
@@ -93,7 +97,6 @@ const CreateBlog = () => {
     width: 0,
     height: 0,
   });
-
   const {
     data: blogDropdownData,
     isLoading: isLoadingBlogs,
@@ -374,7 +377,6 @@ const CreateBlog = () => {
       err[i] = e;
     });
 
-
     setError(err);
     setErrors(newErrors);
     setSubErrors(newSubErrors);
@@ -428,6 +430,11 @@ const CreateBlog = () => {
     selectedRelatedBlogs.forEach((blog, index) => {
       formDataObj.append(`related[${index}][blog_related_id]`, blog.value);
     });
+    const categories = selectedBlogCategories
+      .map((blog) => blog.value)
+      .join(",");
+
+    formDataObj.append("blog_categories", categories);
 
     try {
       const res = await trigger({
@@ -788,6 +795,18 @@ const CreateBlog = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        Blog Categories
+                      </Label>
+                      <MemoizedSelect
+                        isMulti
+                        options={certifications}
+                        value={selectedBlogCategories}
+                        onChange={setSelectedBlogCategories}
+                        placeholder="Search and select blog categories..."
+                      />
+
                       <Label className="flex items-center gap-2 text-sm">
                         <ImageIcon className="h-4 w-4" />
                         Blog Image *

@@ -1,6 +1,6 @@
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { RefreshCcw } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const ToggleStatus = ({
@@ -14,7 +14,9 @@ const ToggleStatus = ({
 }) => {
   const [status, setStatus] = useState(initialStatus);
   const { trigger, loading } = useApiMutation();
-
+  useEffect(() => {
+    setStatus(initialStatus);
+  }, [initialStatus]);
   const handleToggle = async () => {
     const newStatus = status === activeValue ? inactiveValue : activeValue;
 

@@ -52,6 +52,9 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import BlogFaqForm from "./blog-faq";
+import certifications from "@/constants/certifications.json";
+import moment from "moment";
+
 const EMPTY_FAQ = {
   id: "",
   faq_sort: "",
@@ -95,6 +98,8 @@ const EditBlog = () => {
   });
 
   const [blogSubs, setBlogSubs] = useState([]);
+  const [selectedBlogCategories, setSelectedBlogCategories] = useState([]);
+
   const [selectedRelatedBlogs, setSelectedRelatedBlogs] = useState([]);
   const [existingSubIds, setExistingSubIds] = useState([]);
   const [existingRelatedIds, setExistingRelatedIds] = useState([]);
@@ -199,7 +204,17 @@ const EditBlog = () => {
         setExistingImageUrl(`${blogBaseUrl}${data.blog_images}`);
         setPreviewImage(`${blogBaseUrl}${data.blog_images}`);
       }
+      if (data.blog_categories) {
+        const selectedCategories = data.blog_categories
+          .split(",")
+          .map((cat) => cat.trim())
+          .map((cat) => ({
+            label: cat,
+            value: cat,
+          }));
 
+        setSelectedBlogCategories(selectedCategories);
+      }
       if (data.web_blog_subs?.length) {
         const subs = data.web_blog_subs.map((sub) => ({
           id: sub.id,
@@ -598,6 +613,11 @@ const EditBlog = () => {
       }
       formDataObj.append(`related[${index}][blog_related_id]`, blog.value);
     });
+
+    const categories = selectedBlogCategories
+      .map((blog) => blog.value)
+      .join(",");
+    formDataObj.append("blog_categories", categories);
 
     try {
       const res = await trigger({
@@ -1016,6 +1036,17 @@ const EditBlog = () => {
                       </div>
                     </div>
                     <div className="space-y-2">
+                      <Label className="flex items-center gap-2">
+                        <Type className="h-4 w-4" />
+                        Blog Categories
+                      </Label>
+                      <MemoizedSelect
+                        isMulti
+                        options={certifications}
+                        value={selectedBlogCategories}
+                        onChange={setSelectedBlogCategories}
+                        placeholder="Search and select blog categories..."
+                      />
                       <Label className="flex items-center gap-2 text-sm">
                         <ImageIcon className="h-4 w-4" />
                         Blog Image *
@@ -1444,7 +1475,7 @@ const EditBlog = () => {
           }`}
         >
           <div className="sticky top-4">
-            <Card>
+            <Card className="max-h-screen overflow-y-auto">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
@@ -1519,14 +1550,6 @@ const EditBlog = () => {
                     </div>
 
                     <div className="p-4">
-                      {/* {formData.blog_heading ? (
-                        <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                          {formData.blog_heading}
-                        </h3>
-                      ) : (
-                        <div className="h-6 bg-gray-200 rounded mb-2 animate-pulse"></div>
-                      )} */}
-
                       {formData.blog_slug && (
                         <div className="mb-2">
                           <code className="text-xs bg-gray-100 px-2 py-1 rounded text-gray-600">
@@ -1535,7 +1558,7 @@ const EditBlog = () => {
                         </div>
                       )}
 
-                      {formData.blog_short_description ? (
+                      {/* {formData.blog_short_description ? (
                         <p className="text-gray-600 text-sm mb-3 line-clamp-3">
                           {formData.blog_short_description}
                         </p>
@@ -1544,12 +1567,16 @@ const EditBlog = () => {
                           <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
                           <div className="h-3 bg-gray-200 rounded animate-pulse"></div>
                         </div>
-                      )}
+                      )} */}
 
                       <div className="flex items-center justify-between text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          <span>{formData.blog_created || "Date not set"}</span>
+                          {formData.blog_created
+                            ? moment(formData.blog_created).format(
+                                "DD MMM YYYY"
+                              )
+                            : "Date not set"}{" "}
                         </div>
                         <div className="flex items-center gap-1">
                           <BookOpen className="h-3 w-3" />
@@ -1635,12 +1662,6 @@ const EditBlog = () => {
                   )}
 
                   <div className="grid grid-cols-4 gap-2 text-center">
-                    {/* <div className="bg-gray-50 p-3 rounded-lg">
-                      <p className="text-2xl font-bold text-gray-900">
-                        {formData.blog_heading.length}
-                      </p>
-                      <p className="text-xs text-gray-500">Chars</p>
-                    </div> */}
                     <div className="bg-gray-50 p-3 rounded-lg">
                       <p className="text-2xl font-bold text-gray-900">
                         {blogSubs.length}

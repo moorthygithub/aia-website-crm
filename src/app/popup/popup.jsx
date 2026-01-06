@@ -44,7 +44,7 @@ const PopupList = () => {
         );
       },
     },
-    { header: "Page One Name", accessorKey: "page_one_name" },
+    { header: "Page", accessorKey: "page_one_name" },
     { header: "Required", accessorKey: "popup_required" },
     { header: "Heading", accessorKey: "popup_heading" },
     {

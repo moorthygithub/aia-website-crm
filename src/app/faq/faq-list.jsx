@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { FAQ_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { Edit, Plus, Search } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 const FaqList = () => {
@@ -17,12 +17,17 @@ const FaqList = () => {
     url: FAQ_API.list,
     queryKey: ["faq-list"],
   });
+  const filteredData = useMemo(() => {
+    const list = data?.data ?? [];
 
-  const filteredData =
-    data?.data?.filter((faq) =>
-      faq?.page_two_name.toLowerCase().includes(searchTerm.toLowerCase())
-    ) ?? [];
+    if (!searchTerm.trim()) return list;
 
+    return list.filter((faq) =>
+      (faq?.page_two_name ?? "")
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+    );
+  }, [data, searchTerm]);
   if (isLoading) return <LoadingBar />;
 
   if (isError) return <ApiErrorPage onRetry={refetch} />;
@@ -32,15 +37,6 @@ const FaqList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="mb-8">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900">
-            FAQ Management
-          </h1>
-          <p className="text-gray-600 mt-2 text-base">
-            Manage and organize your frequently asked questions
-          </p>
-        </div>
-
         <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 pointer-events-none" />

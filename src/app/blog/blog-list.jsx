@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import DataTable from "@/components/common/data-table";
 import ImageCell from "@/components/common/ImageCell";
 import LoadingBar from "@/components/loader/loading-bar";
@@ -8,7 +8,7 @@ import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 import { Edit, Trash2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -20,28 +20,32 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import moment from "moment";
 import { Button } from "@/components/ui/button";
+import moment from "moment";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const BlogList = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedBlog, setSelectedBlog] = useState(null);
+  const navigate = useNavigate();
 
-  const {
-    data: data,
-    isLoading,
-    isError,
-    refetch,
-  } = useGetApiMutation({
+  const { data, isLoading, isError, refetch } = useGetApiMutation({
     url: BLOG_API.list,
     queryKey: ["blog-list"],
   });
-  const navigate = useNavigate();
+
   const { trigger: deleteTrigger, loading: isDeleting } = useApiMutation();
 
+  const list = data?.data || [];
   const IMAGE_FOR = "Blog";
   const blogBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
+
+  /* ✅ Unique Courses for Tabs */
+  const courses = useMemo(
+    () => [...new Set(list.map((blog) => blog.blog_course))],
+    [list]
+  );
 
   const handleDeleteClick = (blog) => {
     setSelectedBlog(blog);
@@ -50,7 +54,6 @@ const BlogList = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedBlog) return;
-
     try {
       const res = await deleteTrigger({
         url: BLOG_API.delete(selectedBlog.id),
@@ -78,40 +81,20 @@ const BlogList = () => {
       cell: ({ row }) => {
         const fileName = row.original.blog_images;
         const src = fileName ? `${blogBaseUrl}${fileName}` : noImageUrl;
-
-        return (
-          <ImageCell
-            src={src}
-            fallback={noImageUrl}
-            alt={`${IMAGE_FOR} Image`}
-          />
-        );
+        return <ImageCell src={src} fallback={noImageUrl} alt="Blog Image" />;
       },
     },
-
-    {
-      header: "Blog Slug",
-      accessorKey: "blog_slug",
-    },
-    {
-      header: "Blog Heading",
-      accessorKey: "blog_heading",
-    },
-    {
-      header: "Course",
-      accessorKey: "blog_course",
-    },
-
+    { header: "Blog Slug", accessorKey: "blog_slug" },
+    { header: "Blog Heading", accessorKey: "blog_heading" },
+    { header: "Course", accessorKey: "blog_course" },
     {
       header: "Created Date",
       accessorKey: "blog_created",
       cell: ({ row }) => {
         const date = row.original.blog_created;
-        const formattedDate = date ? moment(date).format("DD MMM YYYY") : "-";
-        return <span>{formattedDate}</span>;
+        return <span>{date ? moment(date).format("DD MMM YYYY") : "-"}</span>;
       },
     },
-
     {
       header: "Status",
       accessorKey: "blog_status",
@@ -129,7 +112,6 @@ const BlogList = () => {
     },
     {
       header: "Actions",
-      accessorKey: "actions",
       cell: ({ row }) => (
         <div className="flex items-center gap-3">
           <Button
@@ -156,17 +138,47 @@ const BlogList = () => {
 
   return (
     <>
-      <DataTable
-        data={data?.data || []}
-        columns={columns}
-        pageSize={10}
-        searchPlaceholder="Search blogs..."
-        addButton={{
-          to: "/add-blog",
-          label: "Add Blog",
-        }}
-      />
+      <Tabs defaultValue="ALL">
+        <TabsList className="mb-4">
+          <TabsTrigger value="ALL">All</TabsTrigger>
+          {courses.map((course) => (
+            <TabsTrigger key={course} value={course}>
+              {course}
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
+        {/* ✅ All Blogs */}
+        <TabsContent value="ALL">
+          <DataTable
+            data={list}
+            columns={columns}
+            pageSize={10}
+            searchPlaceholder="Search blogs..."
+            addButton={{ to: "/add-blog", label: "Add Blog" }}
+          />
+        </TabsContent>
+
+        {/* ✅ Blogs by Course */}
+        {courses.map((course) => {
+          const filteredData = list.filter(
+            (blog) => blog.blog_course === course
+          );
+          return (
+            <TabsContent key={course} value={course}>
+              <DataTable
+                data={filteredData}
+                columns={columns}
+                pageSize={10}
+                searchPlaceholder={`Search ${course} blogs...`}
+                addButton={{ to: "/add-blog", label: "Add Blog" }}
+              />
+            </TabsContent>
+          );
+        })}
+      </Tabs>
+
+      {/* ✅ Delete Alert */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -178,8 +190,7 @@ const BlogList = () => {
               <span className="font-bold text-red-800">
                 {selectedBlog?.blog_heading}
               </span>
-              ? This action cannot be undone and will permanently remove the
-              blog and all associated data.
+              ? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

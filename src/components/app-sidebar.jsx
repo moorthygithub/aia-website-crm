@@ -122,7 +122,7 @@ const USER_ROLE_PERMISSIONS = {
       "FAQLIST",
       "GALLERYLIST",
       "BLOGLIST",
-      "SETTINGS",
+      // "SETTINGS",
     ],
     navMainReport: ["SUMMARY", "DOWNLOADS", "OTHER", "SETTINGS"],
   },

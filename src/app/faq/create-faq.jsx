@@ -30,6 +30,7 @@ import {
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
+import BlogFaqForm from "../blog/blog-faq";
 
 /* ---------------- CONSTANTS ---------------- */
 
@@ -136,7 +137,6 @@ const FaqForm = () => {
     setFaqItems(copy);
   };
 
-
   const validate = () => {
     let valid = true;
     const err = [];
@@ -185,9 +185,11 @@ const FaqForm = () => {
         data: payload,
       });
 
-      if (res?.code === 200 || res?.code === 201) {
+      if (res?.code === 200) {
         toast.success(res.msg || "Success");
-        queryClient.invalidateQueries(["faq-list"]);
+        await queryClient.invalidateQueries({
+          queryKey: ["faq-list"],
+        });
         navigate("/faq-list");
       }
     } catch {
@@ -269,7 +271,7 @@ const FaqForm = () => {
             </div>
 
             {/* FAQ ITEMS */}
-            {faqItems.map((item, i) => (
+            {/* {faqItems.map((item, i) => (
               <div key={i} className="border rounded-lg p-3 space-y-2">
                 <div className="flex justify-between">
                   <h4 className="font-medium">FAQ {i + 1}</h4>
@@ -369,12 +371,19 @@ const FaqForm = () => {
               </div>
             ))}
 
-            {/* {!isEdit && ( */}
-              <Button type="button" variant="outline" onClick={addFaq}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add FAQ
-              </Button>
-            {/* // )} */}
+            <Button type="button" variant="outline" onClick={addFaq}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add FAQ
+            </Button> */}
+            <BlogFaqForm
+              isEdit={isEdit ? true : false}
+              faqItems={faqItems}
+              error={errors}
+              addFaq={addFaq}
+              removeFaq={removeFaq}
+              moveFaq={moveFaq}
+              handleItemChange={handleItemChange}
+            />
 
             <Button type="submit" disabled={loading} className="!mt-1 ml-3">
               {loading ? (

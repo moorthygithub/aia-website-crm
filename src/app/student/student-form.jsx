@@ -225,7 +225,10 @@ const StudentForm = () => {
       "student_have_certificate",
       data.student_have_certificate || ""
     );
-    formData.append("student_recent_passout", data.student_recent_passout || "");
+    formData.append(
+      "student_recent_passout",
+      data.student_recent_passout || ""
+    );
     formData.append("student_have_youtube", data.student_have_youtube || "");
     formData.append("student_testimonial", data.student_testimonial || "");
     formData.append("student_linkedin_link", data.student_linkedin_link || "");
@@ -408,7 +411,7 @@ const StudentForm = () => {
             <div>
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-gray-700">
-                  Country
+                  Country - City
                 </label>
 
                 <button
@@ -426,12 +429,12 @@ const StudentForm = () => {
                 }
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select Country" />
+                  <SelectValue placeholder="Select Country - City" />
                 </SelectTrigger>
                 <SelectContent>
                   {countriesData?.data?.map((c) => (
                     <SelectItem key={c.id} value={c.id.toString()}>
-                      {c.country_name}
+                      {c.country_name}-{c.country_city}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -564,7 +567,7 @@ const StudentForm = () => {
                 />
               </div>
             </div>
-            <div className="flex items-center h-full ml-4">
+            {/* <div className="flex items-center h-full ml-4">
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-medium">Recent Passout </label>
 
@@ -580,7 +583,7 @@ const StudentForm = () => {
                   ]}
                 />
               </div>
-            </div>
+            </div> */}
 
             {isEditMode && (
               <div className="flex items-center h-full ml-4">
@@ -732,9 +735,9 @@ const StudentForm = () => {
                     error={errors.student_certificate_image}
                     format="WEBP"
                     allowedExtensions={["webp"]}
-                    dimensions="350*220"
+                    dimensions="380*270"
                     maxSize={5}
-                    requiredDimensions={[350, 220]}
+                    requiredDimensions={[380, 270]}
                   />
                 </div>
                 <div className="col-span-2">
@@ -775,14 +778,14 @@ const StudentForm = () => {
                     }
                     format="WEBP"
                     allowedExtensions={["webp"]}
-                    dimensions="350*220"
+                    dimensions="310*220"
                     maxSize={5}
-                    requiredDimensions={[350, 220]}
+                    requiredDimensions={[310, 220]}
                   />
                 </div>
                 <div className="col-span-2">
                   <label className="text-sm font-medium">
-                    Other Certificate Image Alt *
+                    Other Certificate Image Alt
                   </label>
                   <Textarea
                     placeholder="Describe the certificate image"
