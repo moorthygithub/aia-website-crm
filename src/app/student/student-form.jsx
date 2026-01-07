@@ -778,9 +778,8 @@ const StudentForm = () => {
                     }
                     format="WEBP"
                     allowedExtensions={["webp"]}
-                    dimensions="310*220"
                     maxSize={5}
-                    requiredDimensions={[310, 220]}
+             
                   />
                 </div>
                 <div className="col-span-2">
