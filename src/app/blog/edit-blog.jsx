@@ -222,17 +222,7 @@ const EditBlog = () => {
           blog_sub_heading_tag: sub.blog_sub_heading_tag || "",
           blog_sub_description: sub.blog_sub_description || "",
         }));
-        console.log("subs", data?.faq);
-        setFaqItems(
-          blogData?.faq?.map((s) => ({
-            id: s.id,
-            faq_sort: s.faq_sort ?? "",
-            faq_heading: s.faq_heading ?? "",
-            faq_que: s.faq_que ?? "",
-            faq_ans: s.faq_ans ?? "",
-            faq_status: s.faq_status ?? "Active",
-          }))
-        );
+
         setBlogSubs(subs);
         setExistingSubIds(subs.map((sub) => sub.id));
         setSubErrors(Array(subs.length).fill({}));
@@ -246,7 +236,19 @@ const EditBlog = () => {
         ]);
         setSubErrors([{}]);
       }
+      if (blogData.faq.length > 0) {
+        const mappedFaq =
+          blogData?.faq?.map((s) => ({
+            id: s.id,
+            faq_sort: s.faq_sort ?? "",
+            faq_heading: s.faq_heading ?? "",
+            faq_que: s.faq_que ?? "",
+            faq_ans: s.faq_ans ?? "",
+            faq_status: s.faq_status ?? "Active",
+          })) || [];
 
+        setFaqItems(mappedFaq.length ? mappedFaq : EMPTY_FAQ);
+      }
       setSelectedRelatedBlogs([]);
       setExistingRelatedIds([]);
     }
@@ -537,14 +539,24 @@ const EditBlog = () => {
       newSubErrors.push(subError);
     });
     const err = [];
+
     faqItems.forEach((f, i) => {
       const e = {};
-      if (!f.faq_sort) e.faq_sort = "Required";
-      if (!f.faq_que) e.faq_que = "Required";
-      if (!f.faq_ans) e.faq_ans = "Required";
-      if (Object.keys(e).length) isValid = false;
+
+      const hasAnyValue =
+        f.faq_sort?.toString().trim() || f.faq_que?.trim() || f.faq_ans?.trim();
+
+      if (hasAnyValue) {
+        if (!f.faq_sort) e.faq_sort = "Required";
+        if (!f.faq_que) e.faq_que = "Required";
+        if (!f.faq_ans) e.faq_ans = "Required";
+
+        if (Object.keys(e).length) isValid = false;
+      }
+
       err[i] = e;
     });
+
     setError(err);
     setErrors(newErrors);
     setSubErrors(newSubErrors);
@@ -599,14 +611,24 @@ const EditBlog = () => {
         sub.blog_sub_description
       );
     });
-    faqItems.forEach((f, index) => {
-      formDataObj.append(`faq[${index}][id]`, f.id);
-      formDataObj.append(`faq[${index}][faq_sort]`, f.faq_sort);
-      formDataObj.append(`faq[${index}][faq_heading]`, f.faq_heading);
-      formDataObj.append(`faq[${index}][faq_que]`, f.faq_que);
-      formDataObj.append(`faq[${index}][faq_ans]`, f.faq_ans);
-      formDataObj.append(`faq[${index}][faq_status]`, f.faq_status);
-    });
+
+    faqItems
+      .filter(
+        (f) =>
+          f.faq_sort?.toString().trim() ||
+          f.faq_heading?.trim() ||
+          f.faq_que?.trim() ||
+          f.faq_ans?.trim()
+      )
+      .forEach((f, index) => {
+        formDataObj.append(`faq[${index}][id]`, f.id ?? "");
+        formDataObj.append(`faq[${index}][faq_sort]`, f.faq_sort ?? "");
+        formDataObj.append(`faq[${index}][faq_heading]`, f.faq_heading ?? "");
+        formDataObj.append(`faq[${index}][faq_que]`, f.faq_que ?? "");
+        formDataObj.append(`faq[${index}][faq_ans]`, f.faq_ans ?? "");
+        formDataObj.append(`faq[${index}][faq_status]`, f.faq_status ?? "");
+      });
+
     selectedRelatedBlogs.forEach((blog, index) => {
       if (existingRelatedIds.includes(blog.value)) {
         formDataObj.append(`related[${index}][id]`, blog.value);

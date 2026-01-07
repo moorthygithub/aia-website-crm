@@ -76,7 +76,6 @@ const BlogFaqForm = ({
                         <span className="text-xs text-muted-foreground">
                           {item.faq_status === "Active" ? "Active" : "Inactive"}
                         </span>
-
                         <Switch
                           checked={item.faq_status === "Active"}
                           onCheckedChange={(checked) =>

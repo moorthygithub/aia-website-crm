@@ -25,7 +25,6 @@ import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { CKEditor } from "ckeditor4-react";
 import {
-  AlertCircle,
   BookOpen,
   Calendar,
   Eye,
@@ -35,7 +34,7 @@ import {
   Plus,
   Trash2,
   Type,
-  User,
+  User
 } from "lucide-react";
 import moment from "moment";
 import { useState } from "react";
