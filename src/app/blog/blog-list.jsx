@@ -87,14 +87,30 @@ const BlogList = () => {
     { header: "Blog Slug", accessorKey: "blog_slug" },
     { header: "Blog Heading", accessorKey: "blog_heading" },
     { header: "Course", accessorKey: "blog_course" },
-    {
-      header: "Created Date",
-      accessorKey: "blog_created",
-      cell: ({ row }) => {
-        const date = row.original.blog_created;
-        return <span>{date ? moment(date).format("DD MMM YYYY") : "-"}</span>;
-      },
-    },
+{
+  header: "Trending",
+  accessorKey: "blog_trending",
+  cell: ({ row }) => {
+    const value = row.original.blog_trending;
+    if (value == null) return null;
+
+    const normalizedValue = String(value).toLowerCase();
+
+    const displayText = normalizedValue === "yes" ? "Yes" : "No";
+    const bgColor = normalizedValue === "yes" ? "bg-green-100" : "bg-red-100";
+    const textColor = normalizedValue === "yes" ? "text-green-800" : "text-red-800";
+
+    return (
+      <span
+        className={`px-4 py-1 rounded-full text-center text-xs ${bgColor} ${textColor}`}
+      >
+        {displayText}
+      </span>
+    );
+  },
+},
+
+
     {
       header: "Status",
       accessorKey: "blog_status",
@@ -109,6 +125,14 @@ const BlogList = () => {
           {row.original.blog_status}
         </span>
       ),
+    },
+    {
+      header: "Created Date",
+      accessorKey: "blog_created",
+      cell: ({ row }) => {
+        const date = row.original.blog_created;
+        return <span>{date ? moment(date).format("DD MMM YYYY") : "-"}</span>;
+      },
     },
     {
       header: "Actions",

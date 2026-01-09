@@ -90,6 +90,7 @@ const EditBlog = () => {
     // blog_short_description: "",
     blog_course: "",
     blog_index: "no",
+    blog_trending: "no",
     blog_created: new Date().toISOString().split("T")[0],
     blog_images_alt: "",
     blog_slug: "",
@@ -190,6 +191,7 @@ const EditBlog = () => {
         // blog_heading: data.blog_heading || "",
         blog_meta_keywords: data.blog_meta_keywords || "",
         blog_index: data.blog_index || "",
+        blog_trending: data.blog_trending || "",
         // blog_short_description: data.blog_short_description || "",
         blog_course: data.blog_course || "",
         blog_created:
@@ -576,6 +578,7 @@ const EditBlog = () => {
     formDataObj.append("blog_meta_description", formData.blog_meta_description);
     formDataObj.append("blog_meta_keywords", formData.blog_meta_keywords);
     formDataObj.append("blog_index", formData.blog_index);
+    formDataObj.append("blog_trending", formData.blog_trending);
 
     formDataObj.append("blog_slug", formData.blog_slug);
     // formDataObj.append("blog_heading", formData.blog_heading);
@@ -942,23 +945,43 @@ const EditBlog = () => {
                         directly
                       </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <Type className="h-4 w-4" />
-                        BLog Index
-                      </Label>
+                    <div className="flex gap-4">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Type className="h-4 w-4" />
+                          BLog Index
+                        </Label>
 
-                      <GroupButton
-                        className="w-fit"
-                        value={formData.blog_index}
-                        onChange={(value) =>
-                          setFormData({ ...formData, blog_index: value })
-                        }
-                        options={[
-                          { label: "Yes", value: "yes" },
-                          { label: "No", value: "no" },
-                        ]}
-                      />
+                        <GroupButton
+                          className="w-fit"
+                          value={formData.blog_index}
+                          onChange={(value) =>
+                            setFormData({ ...formData, blog_index: value })
+                          }
+                          options={[
+                            { label: "Yes", value: "yes" },
+                            { label: "No", value: "no" },
+                          ]}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Type className="h-4 w-4" />
+                          Trending
+                        </Label>
+
+                        <GroupButton
+                          className="w-fit"
+                          value={formData.blog_trending}
+                          onChange={(value) =>
+                            setFormData({ ...formData, blog_trending: value })
+                          }
+                          options={[
+                            { label: "Yes", value: "yes" },
+                            { label: "No", value: "no" },
+                          ]}
+                        />
+                      </div>
                     </div>
                     <div className="flex flex-col gap-2">
                       <div className="space-y-2">

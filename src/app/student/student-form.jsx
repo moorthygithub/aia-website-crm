@@ -30,6 +30,7 @@ import { GroupButton } from "@/components/group-button";
 import { Card } from "@/components/ui/card";
 import CompanyDialog from "../company/create-company";
 import CountryForm from "../country/country-form";
+import { CKEditor } from "ckeditor4-react";
 
 const initialState = {
   student_uid: "",
@@ -44,6 +45,9 @@ const initialState = {
   student_have_certificate: "No",
   student_have_youtube: "No",
   student_recent_passout: "No",
+  student_have_story: "No",
+  student_story_date: "",
+  student_story_details: "",
   student_testimonial: "",
   student_linkedin_link: "",
   student_youtube_link: "",
@@ -153,6 +157,16 @@ const StudentForm = () => {
       err.student_have_certificate = "Certificate is required";
     if (!data.student_have_youtube)
       err.student_have_youtube = "Youtube is required";
+
+    if (!data.student_have_testimonial)
+      err.student_have_testimonial = "Testimonial is required";
+    if (!data.student_have_certificate)
+      err.student_have_certificate = "Have Certificate is required";
+    if (!data.student_have_youtube)
+      err.student_have_youtube = "Have YouTube is required";
+    if (!data.student_recent_passout)
+      err.student_recent_passout = "Have Passout is required";
+
     if (!preview.student_image && !data.student_image)
       err.student_image = "Student image is required";
     if (!data.student_image_alt)
@@ -164,6 +178,14 @@ const StudentForm = () => {
     if (data.student_have_testimonial === "Yes") {
       if (!data.student_testimonial)
         err.student_testimonial = "Testimonial is required";
+    }
+    if (!data.student_have_story)
+      err.student_have_story = "Have Story is required";
+    if (data.student_have_story === "Yes") {
+      if (!data.student_story_details)
+        err.student_story_details = "Success Story is required";
+      if (!data.student_story_date)
+        err.student_story_date = "Success Story Date is required";
     }
 
     if (data.student_have_certificate === "Yes") {
@@ -231,6 +253,9 @@ const StudentForm = () => {
     );
     formData.append("student_have_youtube", data.student_have_youtube || "");
     formData.append("student_testimonial", data.student_testimonial || "");
+    formData.append("student_have_story", data.student_have_story || "");
+    formData.append("student_story_details", data.student_story_details || "");
+    formData.append("student_story_date", data.student_story_date || "");
     formData.append("student_linkedin_link", data.student_linkedin_link || "");
     formData.append("student_youtube_link", data.student_youtube_link || "");
     formData.append("student_image_alt", data.student_image_alt || "");
@@ -511,79 +536,89 @@ const StudentForm = () => {
               </div>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 my-4 gap-4">
-            <div className="flex items-center h-full ml-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">
-                  Have Testimonial *
-                </label>
+          {/* <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 my-4 gap-4"> */}
+          <div className="flex gap-4 my-4">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">Have Testimonial *</label>
 
-                <GroupButton
-                  className="w-fit"
-                  value={data.student_have_testimonial}
-                  onChange={(value) =>
-                    setData({ ...data, student_have_testimonial: value })
-                  }
-                  options={[
-                    { label: "Yes", value: "Yes" },
-                    { label: "No", value: "No" },
-                  ]}
-                />
-              </div>
+              <GroupButton
+                className="w-fit"
+                value={data.student_have_testimonial}
+                onChange={(value) =>
+                  setData({ ...data, student_have_testimonial: value })
+                }
+                options={[
+                  { label: "Yes", value: "Yes" },
+                  { label: "No", value: "No" },
+                ]}
+              />
+              {errors.student_have_testimonial && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.student_have_testimonial}
+                </p>
+              )}
             </div>
-            <div className="flex items-center h-full ml-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">
-                  Have Certificate *
-                </label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">Have Certificate *</label>
 
-                <GroupButton
-                  className="w-fit"
-                  value={data.student_have_certificate}
-                  onChange={(value) =>
-                    setData({ ...data, student_have_certificate: value })
-                  }
-                  options={[
-                    { label: "Yes", value: "Yes" },
-                    { label: "No", value: "No" },
-                  ]}
-                />
-              </div>
+              <GroupButton
+                className="w-fit"
+                value={data.student_have_certificate}
+                onChange={(value) =>
+                  setData({ ...data, student_have_certificate: value })
+                }
+                options={[
+                  { label: "Yes", value: "Yes" },
+                  { label: "No", value: "No" },
+                ]}
+              />
+              {errors.student_have_certificate && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.student_have_certificate}
+                </p>
+              )}
             </div>
-            <div className="flex items-center h-full ml-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">Have Youtube *</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">Have Youtube *</label>
 
-                <GroupButton
-                  className="w-fit"
-                  value={data.student_have_youtube}
-                  onChange={(value) =>
-                    setData({ ...data, student_have_youtube: value })
-                  }
-                  options={[
-                    { label: "Yes", value: "Yes" },
-                    { label: "No", value: "No" },
-                  ]}
-                />
-              </div>
+              <GroupButton
+                className="w-fit"
+                value={data.student_have_youtube}
+                onChange={(value) =>
+                  setData({ ...data, student_have_youtube: value })
+                }
+                options={[
+                  { label: "Yes", value: "Yes" },
+                  { label: "No", value: "No" },
+                ]}
+              />
+              {errors.student_have_youtube && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.student_have_youtube}
+                </p>
+              )}
             </div>
-            {/* <div className="flex items-center h-full ml-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium">Recent Passout </label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-sm font-medium">Have Story *</label>
 
-                <GroupButton
-                  className="w-fit"
-                  value={data.student_recent_passout}
-                  onChange={(value) =>
-                    setData({ ...data, student_recent_passout: value })
-                  }
-                  options={[
-                    { label: "Yes", value: "Yes" },
-                    { label: "No", value: "No" },
-                  ]}
-                />
-              </div>
-            </div> */}
+              <GroupButton
+                className="w-fit"
+                value={data.student_have_story}
+                onChange={(value) =>
+                  setData({ ...data, student_have_story: value })
+                }
+                options={[
+                  { label: "Yes", value: "Yes" },
+                  { label: "No", value: "No" },
+                ]}
+              />
+
+              {errors.student_have_story && (
+                <p className="text-xs text-red-500 mt-1">
+                  {errors.student_have_story}
+                </p>
+              )}
+            </div>
 
             {isEditMode && (
               <div className="flex items-center h-full ml-4">
@@ -604,7 +639,44 @@ const StudentForm = () => {
                 </div>
               </div>
             )}
+            {data.student_have_story == "Yes" && (
+              <div>
+                <label className="text-sm font-medium">
+                  Success Story Date *
+                </label>
+                <Input
+                  value={data.student_story_date}
+                  type="date"
+                  onChange={(e) =>
+                    setData({ ...data, student_story_date: e.target.value })
+                  }
+                />
+                {errors.student_story_date && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.student_story_date}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
+          {/* <div className="flex items-center h-full ml-4">
+              <div className="flex flex-col gap-1.5">
+                <label className="text-sm font-medium">Recent Passout </label>
+
+                <GroupButton
+                  className="w-fit"
+                  value={data.student_recent_passout}
+                  onChange={(value) =>
+                    setData({ ...data, student_recent_passout: value })
+                  }
+                  options={[
+                    { label: "Yes", value: "Yes" },
+                    { label: "No", value: "No" },
+                  ]}
+                />
+              </div>
+            </div> */}
+          {/* </div> */}
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4   gap-4">
             <div className="col-span-2">
               <ImageUpload
@@ -864,6 +936,73 @@ const StudentForm = () => {
                   )}
                 </div>
               </>
+            )}
+            {data?.student_have_story === "Yes" && (
+              <div className="space-y-1 col-span-4">
+                <label className="text-sm font-medium">Success Story *</label>
+
+                <div
+                  className={
+                    errors.student_story_details ? "border border-red-500" : ""
+                  }
+                >
+                  <CKEditor
+                    initData={data.student_story_details || ""}
+                    config={{
+                      versionCheck: false,
+                      toolbar: [
+                        {
+                          name: "basicstyles",
+                          items: ["Bold", "Italic", "Underline", "Strike"],
+                        },
+                        {
+                          name: "paragraph",
+                          items: [
+                            "NumberedList",
+                            "BulletedList",
+                            "-",
+                            "Outdent",
+                            "Indent",
+                          ],
+                        },
+                        {
+                          name: "links",
+                          items: ["Link", "Unlink"],
+                        },
+                        {
+                          name: "insert",
+                          items: ["Image", "Table"],
+                        },
+                        {
+                          name: "styles",
+                          items: ["Styles", "Format", "Font", "FontSize"],
+                        },
+                        {
+                          name: "colors",
+                          items: ["TextColor", "BGColor"],
+                        },
+                        { name: "tools", items: ["Maximize"] },
+                      ],
+                      height: 200,
+                      removePlugins: "elementspath",
+                      resize_enabled: false,
+                    }}
+                    onChange={(event) => {
+                      const editorData = event.editor.getData();
+
+                      setData((prev) => ({
+                        ...prev,
+                        student_story_details: editorData,
+                      }));
+                    }}
+                  />
+                </div>
+                {errors.student_story_details && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.student_story_details}
+                  </p>
+                )}
+              </div>
             )}
           </div>
         </Card>

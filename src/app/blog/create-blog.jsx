@@ -20,12 +20,12 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { BLOG_API, COURSE_API, GALLERY_API } from "@/constants/apiConstants";
+import certifications from "@/constants/certifications.json";
 import { useApiMutation } from "@/hooks/useApiMutation";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { useQueryClient } from "@tanstack/react-query";
 import { CKEditor } from "ckeditor4-react";
 import {
-  AlertCircle,
   BookOpen,
   Calendar,
   Eye,
@@ -42,7 +42,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import BlogFaqForm from "./blog-faq";
-import certifications from "@/constants/certifications.json";
 
 const EMPTY_FAQ = {
   id: null,
@@ -58,7 +57,12 @@ const CreateBlog = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [showPreview, setShowPreview] = useState(true);
-  const { data: coursesData } = useGetApiMutation({
+  const {
+    data: coursesData,
+    loading: courseLoading,
+    error: courseerror,
+    refetch,
+  } = useGetApiMutation({
     url: COURSE_API.courses,
     queryKey: ["courses-dropdown"],
   });
@@ -71,6 +75,7 @@ const CreateBlog = () => {
     blog_short_description: "",
     blog_course: "",
     blog_index: "no",
+    blog_trending: "no",
     blog_created: new Date().toISOString().split("T")[0],
     blog_images_alt: "",
     blog_slug: "",
@@ -406,6 +411,7 @@ const CreateBlog = () => {
     // );
     formDataObj.append("blog_course", formData.blog_course);
     formDataObj.append("blog_index", formData.blog_index);
+    formDataObj.append("blog_trending", formData.blog_trending);
     formDataObj.append("blog_created", formData.blog_created);
     formDataObj.append("blog_images_alt", formData.blog_images_alt);
     formDataObj.append("blog_images", selectedFile);
@@ -471,34 +477,14 @@ const CreateBlog = () => {
     }
   };
 
-  const handleReset = () => {
-    setFormData({
-      // blog_heading: "",
-      blog_meta_title: "",
-      blog_meta_description: "",
-      blog_meta_keywords: "",
-      blog_course: "",
-      blog_index: "",
-      blog_created: new Date().toISOString().split("T")[0],
-      blog_images_alt: "",
-      blog_slug: "",
-    });
-    setBlogSubs([
-      {
-        blog_sub_heading: "",
-        blog_sub_heading_tag: "",
-        blog_sub_description: "",
-      },
-    ]);
-    setSelectedRelatedBlogs([]);
-    setSelectedFile(null);
-    setPreviewImage(null);
-    setImageDimensions({ width: 0, height: 0 });
-    setErrors({});
-    setSubErrors([]);
-    const fileInput = document.getElementById("blog_images");
-    if (fileInput) fileInput.value = "";
-  };
+  if (isLoadingGallery || isLoadingBlogs || courseLoading) {
+    <LoadingBar />;
+  }
+  if (isErrorBlogs || isErrorGallery || courseerror) {
+    <ApiErrorPage
+      onRetry={() => refetchBlogs() || refetchGallery() || refetch()}
+    />;
+  }
 
   return (
     <div className="max-w-full mx-auto">
@@ -509,9 +495,6 @@ const CreateBlog = () => {
         rightContent={
           <div className="flex justify-end gap-2 pt-4">
             <div className="flex gap-3 justify-end">
-              {/* <Button type="button" variant="outline" onClick={handleReset}>
-                Reset All
-              </Button> */}
               <Button
                 type="submit"
                 onClick={handleSubmit}
@@ -713,23 +696,43 @@ const CreateBlog = () => {
                         directly
                       </p>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <Type className="h-4 w-4" />
-                        Blog Index
-                      </Label>
+                    <div className="flex gap-4">
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Type className="h-4 w-4" />
+                          Blog Index
+                        </Label>
 
-                      <GroupButton
-                        className="w-fit"
-                        value={formData.blog_index}
-                        onChange={(value) =>
-                          setFormData({ ...formData, blog_index: value })
-                        }
-                        options={[
-                          { label: "Yes", value: "yes" },
-                          { label: "No", value: "no" },
-                        ]}
-                      />
+                        <GroupButton
+                          className="w-fit"
+                          value={formData.blog_index}
+                          onChange={(value) =>
+                            setFormData({ ...formData, blog_index: value })
+                          }
+                          options={[
+                            { label: "Yes", value: "yes" },
+                            { label: "No", value: "no" },
+                          ]}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="flex items-center gap-2">
+                          <Type className="h-4 w-4" />
+                          Trending
+                        </Label>
+
+                        <GroupButton
+                          className="w-fit"
+                          value={formData.blog_trending}
+                          onChange={(value) =>
+                            setFormData({ ...formData, blog_trending: value })
+                          }
+                          options={[
+                            { label: "Yes", value: "yes" },
+                            { label: "No", value: "no" },
+                          ]}
+                        />
+                      </div>
                     </div>
                     <div className="flex flex-col gap-2">
                       <div className="space-y-2">
@@ -1133,54 +1136,48 @@ const CreateBlog = () => {
                       Select blogs that are related to this content
                     </p>
 
-                    {isLoadingBlogs ? (
-                      <LoadingBar />
-                    ) : isErrorBlogs ? (
-                      <ApiErrorPage onRetry={() => refetchBlogs()} />
-                    ) : (
-                      <>
-                        <MemoizedSelect
-                          isMulti
-                          options={blogOptions}
-                          value={selectedRelatedBlogs}
-                          onChange={setSelectedRelatedBlogs}
-                          placeholder="Search and select related blogs..."
-                        />
-                        {selectedRelatedBlogs.length > 0 && (
-                          <div className="mt-4 space-y-2">
-                            <Label className="text-sm font-medium">
-                              Selected Blogs ({selectedRelatedBlogs.length})
-                            </Label>
-                            <div className="space-y-2">
-                              {selectedRelatedBlogs.map((blog) => (
-                                <div
-                                  key={blog.value}
-                                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                >
-                                  <div>
-                                    <p className="font-medium text-sm">
-                                      {blog.label}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      Slug: {blog.slug}
-                                    </p>
-                                  </div>
-                                  <Badge
-                                    variant={
-                                      blog.status === "Active"
-                                        ? "default"
-                                        : "secondary"
-                                    }
-                                  >
-                                    {blog.status}
-                                  </Badge>
+                    <>
+                      <MemoizedSelect
+                        isMulti
+                        options={blogOptions}
+                        value={selectedRelatedBlogs}
+                        onChange={setSelectedRelatedBlogs}
+                        placeholder="Search and select related blogs..."
+                      />
+                      {selectedRelatedBlogs.length > 0 && (
+                        <div className="mt-4 space-y-2">
+                          <Label className="text-sm font-medium">
+                            Selected Blogs ({selectedRelatedBlogs.length})
+                          </Label>
+                          <div className="space-y-2">
+                            {selectedRelatedBlogs.map((blog) => (
+                              <div
+                                key={blog.value}
+                                className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                              >
+                                <div>
+                                  <p className="font-medium text-sm">
+                                    {blog.label}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Slug: {blog.slug}
+                                  </p>
                                 </div>
-                              ))}
-                            </div>
+                                <Badge
+                                  variant={
+                                    blog.status === "Active"
+                                      ? "default"
+                                      : "secondary"
+                                  }
+                                >
+                                  {blog.status}
+                                </Badge>
+                              </div>
+                            ))}
                           </div>
-                        )}
-                      </>
-                    )}
+                        </div>
+                      )}
+                    </>
                   </div>
                 </TabsContent>
               </Tabs>
