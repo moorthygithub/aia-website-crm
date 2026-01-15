@@ -1,3 +1,4 @@
+import ApiErrorPage from "@/components/api-error/api-error";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Input } from "@/components/ui/input";
 import { NEWSLETTER_API } from "@/constants/apiConstants";
@@ -12,7 +13,7 @@ const NewsLetter = () => {
 
   const { data, isLoading, isError, refetch } = useGetApiMutation({
     url: NEWSLETTER_API.list,
-    queryKey: ["news-letter-list"],
+    queryKey: ["newsletter-list"],
   });
   const newsletters = data?.data || [];
 
@@ -23,11 +24,6 @@ const NewsLetter = () => {
       item.newsletter_email.toLowerCase().includes(query)
     );
   }, [searchQuery, newsletters]);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    return moment(dateString).format("MMM DD, YYYY");
-  };
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -48,6 +44,7 @@ const NewsLetter = () => {
       transition: { duration: 0.4, ease: "easeOut" },
     },
   };
+  if (isError) return <ApiErrorPage onRetry={refetch} />;
 
   return (
     <>
@@ -104,7 +101,7 @@ const NewsLetter = () => {
           ) : (
             <motion.div
               variants={containerVariants}
-              initial="hidden"
+              initial={false}
               animate="visible"
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
             >
@@ -118,31 +115,19 @@ const NewsLetter = () => {
                   }}
                   className="bg-white border border-gray-200 rounded-xl px-3 py-2 cursor-pointer"
                 >
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs font-bold text-blue-700 bg-blue-100 px-3 py-1.5 rounded-full">
-                      {item.id}
-                    </span>
-                    <div className="flex gap-2">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <p className="text-sm font-medium text-gray-900">
-                        {formatDate(item.newsletter_created)}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="mb-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Mail className="h-4 w-4 text-blue-600" />
-                        <p className="text-xs text-gray-500 font-semibold">
-                          EMAIL
-                        </p>
-                      </div>
-                      <p className="text-sm font-medium text-gray-900 break-all">
+                  <div className="flex items-center justify-between gap-4 p-3">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <Mail className="h-4 w-4 text-blue-600 shrink-0" />
+                      <span className="truncate text-sm font-medium text-gray-900">
                         {item.newsletter_email}
-                      </p>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-sm font-medium text-gray-700 shrink-0">
+                      <Calendar className="h-4 w-4 text-purple-600" />
+                      <span className="whitespace-nowrap">
+                        {moment(item.newsletter_created).format("MMM DD, YYYY")}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
