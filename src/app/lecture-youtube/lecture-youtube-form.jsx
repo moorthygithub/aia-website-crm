@@ -148,7 +148,7 @@ const LectureYoutubeForm = () => {
         (!isEditMode && res?.code === 201)
       ) {
         toast.success(res?.msg || "Saved successfully");
-        navigate("/youtube");
+        navigate("/lecture-youtube");
         queryClient.invalidateQueries({ queryKey: ["lecture-youtube-list"] });
       } else {
         toast.error(res?.msg || "Failed to update leture");
@@ -181,8 +181,8 @@ const LectureYoutubeForm = () => {
       <form onSubmit={handleSubmit}>
         <PageHeader
           icon={Youtube}
-          title={isEditMode ? "Edit YouTube Video" : "Create YouTube Video"}
-          description="Fill in the  youtube  details below to register them"
+          title={isEditMode ? "Edit Lecture Youtube" : "Create Lecture Youtube"}
+          description="Fill in the lecture youtube  details below to register them"
           rightContent={
             <div className="flex justify-end gap-2 pt-4">
               <Button
@@ -289,7 +289,7 @@ const LectureYoutubeForm = () => {
               )}
             </div>
             <div className="md:col-span-2">
-              <label className="text-sm font-medium">Image Alt</label>
+              <label className="text-sm font-medium">Image Alt *</label>
               <Textarea
                 className="mt-1"
                 value={data.youtube_image_alt}

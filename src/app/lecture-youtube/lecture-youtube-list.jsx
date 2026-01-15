@@ -3,13 +3,13 @@ import DataTable from "@/components/common/data-table";
 import ImageCell from "@/components/common/ImageCell";
 import LoadingBar from "@/components/loader/loading-bar";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LETUREYOUTUBE_API } from "@/constants/apiConstants";
 import { useGetApiMutation } from "@/hooks/useGetApiMutation";
 import { getImageBaseUrl, getNoImageUrl } from "@/utils/imageUtils";
 import { Edit } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const LetureYoutubeList = () => {
   const navigate = useNavigate();
@@ -22,16 +22,13 @@ const LetureYoutubeList = () => {
 
   const list = data?.data || [];
 
-  /* ✅ UNIQUE PAGE GROUPS */
   const pageGroups = useMemo(() => {
     return [...new Set(list.map((item) => item.page_one_name))];
   }, [list]);
 
-  /* ✅ IMAGE BASE URL */
   const imageBaseUrl = getImageBaseUrl(data?.image_url, IMAGE_FOR);
   const noImageUrl = getNoImageUrl(data?.image_url);
 
-  /* ✅ TABLE COLUMNS */
   const columns = [
     {
       header: "Image",
@@ -71,7 +68,7 @@ const LetureYoutubeList = () => {
         <Button
           size="icon"
           variant="outline"
-          onClick={() => navigate(`/youtube/${row.original.id}/edit`)}
+          onClick={() => navigate(`/lecture-youtube/${row.original.id}/edit`)}
         >
           <Edit className="h-4 w-4" />
         </Button>
@@ -85,7 +82,6 @@ const LetureYoutubeList = () => {
 
   return (
     <div className="space-y-4">
-      {/* ✅ TABS */}
       <Tabs defaultValue="ALL">
         <TabsList>
           <TabsTrigger value="ALL">All</TabsTrigger>
@@ -96,21 +92,19 @@ const LetureYoutubeList = () => {
           ))}
         </TabsList>
 
-        {/* ✅ ALL TAB */}
         <TabsContent value="ALL">
           <DataTable
             data={list}
             columns={columns}
             pageSize={10}
-            searchPlaceholder="Search youtube..."
+            searchPlaceholder="Search Lecture Youtube..."
             addButton={{
-              to: "/youtube/create",
-              label: "Add Youtube",
+              to: "/lecture-youtube/create",
+              label: "Add Lecture Youtube",
             }}
           />
         </TabsContent>
 
-        {/* ✅ GROUPED PAGE TABS */}
         {pageGroups.map((page) => {
           const filteredData = list.filter(
             (item) => item.page_one_name === page
@@ -121,10 +115,10 @@ const LetureYoutubeList = () => {
                 data={filteredData}
                 columns={columns}
                 pageSize={10}
-                searchPlaceholder={`Search ${page} youtube...`}
+                searchPlaceholder={`Search Lecture Youtube...`}
                 addButton={{
-                  to: "/youtube/create",
-                  label: "Add Youtube",
+                  to: "/lecture-youtube/create",
+                  label: "Add Lecture Youtube",
                 }}
               />
             </TabsContent>

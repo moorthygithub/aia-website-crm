@@ -62,8 +62,8 @@ const NAVIGATION_CONFIG = {
       isActive: false,
     },
     YOUTUBELIST: {
-      title: "Youtube",
-      url: "/youtube",
+      title: "Leture Youtube",
+      url: "/lecture-youtube",
       icon: Youtube,
       isActive: false,
     },

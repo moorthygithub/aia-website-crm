@@ -63,7 +63,7 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/youtube"
+            path="/lecture-youtube"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <LetureYoutubeList />
@@ -71,7 +71,7 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/youtube/create"
+            path="/lecture-youtube/create"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <LectureYoutubeForm />
@@ -79,7 +79,7 @@ function AppRoutes() {
             }
           />
           <Route
-            path="/youtube/:id/edit"
+            path="/lecture-youtube/:id/edit"
             element={
               <Suspense fallback={<LoadingBar />}>
                 <LectureYoutubeForm />
