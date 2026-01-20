@@ -121,13 +121,13 @@ const LectureYoutubeForm = () => {
     }
 
     const formData = new FormData();
-    formData.append("youtube_for", data.youtube_for);
-    formData.append("youtube_sort", data.youtube_sort);
-    formData.append("youtube_course", data.youtube_course);
-    formData.append("youtube_language", data.youtube_language);
-    formData.append("youtube_title", data.youtube_title);
-    formData.append("youtube_link", data.youtube_link);
-    formData.append("youtube_image_alt", data.youtube_image_alt);
+    formData.append("youtube_for", data.youtube_for ?? "");
+    formData.append("youtube_sort", data.youtube_sort ?? "");
+    formData.append("youtube_course", data.youtube_course ?? "");
+    formData.append("youtube_language", data.youtube_language ?? "");
+    formData.append("youtube_title", data.youtube_title ?? "");
+    formData.append("youtube_link", data.youtube_link ?? "");
+    formData.append("youtube_image_alt", data.youtube_image_alt ?? "");
     formData.append("youtube_status", data.youtube_status);
 
     if (data.youtube_image instanceof File) {
