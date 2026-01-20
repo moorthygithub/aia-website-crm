@@ -672,7 +672,7 @@ If you found this project helpful, please consider:
 ![Made with Love](https://img.shields.io/badge/Made%20with-❤️-ff1744?style=for-the-badge)
 ![Open Source](https://img.shields.io/badge/Open%20Source-💚-green?style=for-the-badge)
 
-**Version 3.0.8** | © 2024 AIA Website CRM | All Rights Reserved
+**Version 3.0.8** | © 2026 AIA Website CRM | All Rights Reserved
 
 [⬆ Back to Top](#-aia-website-crm)
 
