@@ -103,6 +103,16 @@ const NAVIGATION_CONFIG = {
           url: "/student-officeimage",
           icon: Users,
         },
+        {
+          title: "Map",
+          url: "/student-map",
+          icon: Users,
+        },
+        {
+          title: "Top",
+          url: "/student-top",
+          icon: Users,
+        },
       ],
     },
 

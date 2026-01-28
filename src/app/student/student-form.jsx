@@ -204,9 +204,9 @@ const StudentForm = () => {
       if (!data.student_image_alt)
         err.student_image_alt = "Image alt is required";
     }
-    if (data.student_is_top == "Yes") {
-      if (!data.student_marks) err.student_marks = "Student Marks is required";
-    }
+    // if (data.student_is_top == "Yes") {
+    //   if (!data.student_marks) err.student_marks = "Student Marks is required";
+    // }
     if (data.student_have_testimonial === "Yes") {
       if (!data.student_testimonial)
         err.student_testimonial = "Testimonial is required";
@@ -1455,7 +1455,7 @@ const StudentForm = () => {
             {data?.student_is_top === "Yes" && (
               <div>
                 <label className="text-sm font-medium block">
-                  Student Marks *
+                  Student Marks 
                 </label>
                 <Textarea
                   placeholder="Example: 91,44,55,67"
@@ -1465,11 +1465,11 @@ const StudentForm = () => {
                   }
                   rows={4}
                 />
-                {errors.student_marks && (
+                {/* {errors.student_marks && (
                   <p className="text-xs text-red-500 mt-1">
                     {errors.student_marks}
                   </p>
-                )}
+                )} */}
               </div>
             )}
           </div>

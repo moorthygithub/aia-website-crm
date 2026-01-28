@@ -18,10 +18,12 @@ import Settings from "@/app/setting/setting";
 import SidePopupList from "@/app/sidepopup/sidepopup-list";
 import StudentCertificate from "@/app/student/student-certificate";
 import StudentForm from "@/app/student/student-form";
+import StudentMap from "@/app/student/student-map";
 import StudentOfficeImage from "@/app/student/student-officeimage";
 import StudentRecentPassOut from "@/app/student/student-recentpassout";
 import StudentStory from "@/app/student/student-story";
 import StudentTestimonial from "@/app/student/student-testimonial";
+import StudenTop from "@/app/student/student-top";
 import StudentYoutube from "@/app/student/student-youtube";
 import Maintenance from "@/components/common/maintenance";
 import ErrorBoundary from "@/components/error-boundry/error-boundry";
@@ -127,6 +129,22 @@ function AppRoutes() {
             element={
               <Suspense fallback={<LoadingBar />}>
                 <StudentRecentPassOut />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/student-map"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StudentMap />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/student-top"
+            element={
+              <Suspense fallback={<LoadingBar />}>
+                <StudenTop />
               </Suspense>
             }
           />

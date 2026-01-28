@@ -312,6 +312,50 @@ const StudentList = ({ enable }) => {
           },
         ]
       : []),
+    ...(enable == "map"
+      ? [
+          {
+            header: "Map",
+            accessorKey: "student_have_map",
+            cell: ({ row }) => {
+              const isActive = row.original.student_have_map === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_have_map}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
+    ...(enable == "top"
+      ? [
+          {
+            header: "Is Top",
+            accessorKey: "student_is_top",
+            cell: ({ row }) => {
+              const isActive = row.original.student_is_top === "Yes";
+              return (
+                <span
+                  className={`px-3 py-1 text-xs font-medium rounded-full inline-block ${
+                    isActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {row.original.student_is_top}
+                </span>
+              );
+            },
+          },
+        ]
+      : []),
 
     {
       header: "Action",
