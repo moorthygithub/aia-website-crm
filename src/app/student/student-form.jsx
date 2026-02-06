@@ -1508,7 +1508,7 @@ const StudentForm = () => {
                     Mark Image Alt *
                   </label>
                   <Textarea
-                    placeholder="Describe the office image"
+                    placeholder="Describe the Mark Image Alt"
                     value={data.student_marks_image_alt}
                     onChange={(e) =>
                       setData({
