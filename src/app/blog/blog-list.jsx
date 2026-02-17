@@ -178,7 +178,7 @@ const BlogList = () => {
           <DataTable
             data={list}
             columns={columns}
-            pageSize={10}
+            pageSize={50}
             searchPlaceholder="Search blogs..."
             addButton={{ to: "/add-blog", label: "Add Blog" }}
           />
@@ -193,7 +193,7 @@ const BlogList = () => {
               <DataTable
                 data={filteredData}
                 columns={columns}
-                pageSize={10}
+                pageSize={50}
                 searchPlaceholder={`Search ${course} blogs...`}
                 addButton={{ to: "/add-blog", label: "Add Blog" }}
               />

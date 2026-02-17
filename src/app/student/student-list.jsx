@@ -418,7 +418,7 @@ const StudentList = ({ enable }) => {
               <DataTable
                 data={activeStudents}
                 columns={columns}
-                pageSize={10}
+                pageSize={50}
                 searchPlaceholder="Search active students..."
                 addButton={{
                   to: "/student/create",
@@ -434,7 +434,7 @@ const StudentList = ({ enable }) => {
                     (item) => item.student_course === course,
                   )}
                   columns={columns}
-                  pageSize={10}
+                  pageSize={50}
                   searchPlaceholder={`Search ${course} (Active)...`}
                   addButton={{
                     to: "/student/create",
@@ -461,7 +461,7 @@ const StudentList = ({ enable }) => {
               <DataTable
                 data={inactiveStudents}
                 columns={columns}
-                pageSize={10}
+                pageSize={50}
                 searchPlaceholder="Search inactive students..."
                 addButton={{
                   to: "/student/create",
@@ -477,7 +477,7 @@ const StudentList = ({ enable }) => {
                     (item) => item.student_course === course,
                   )}
                   columns={columns}
-                  pageSize={10}
+                  pageSize={50}
                   searchPlaceholder={`Search ${course} (Inactive)...`}
                   addButton={{
                     to: "/student/create",

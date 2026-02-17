@@ -1088,10 +1088,10 @@ const StudentForm = () => {
                     onRemove={() => handleRemoveImage("student_youtube_image")}
                     error={errors.student_youtube_image}
                     format="WEBP"
-                    dimensions="350*220"
+                    dimensions="640*360"
                     allowedExtensions={["webp"]}
                     maxSize={5}
-                    requiredDimensions={[350, 220]}
+                    requiredDimensions={[640, 360]}
                   />
                 </div>
 

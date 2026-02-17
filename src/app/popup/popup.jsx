@@ -73,7 +73,7 @@ const PopupList = () => {
       <DataTable
         data={data?.data || []}
         columns={columns}
-        pageSize={10}
+        pageSize={20}
         searchPlaceholder="Search popups..."
       />
 

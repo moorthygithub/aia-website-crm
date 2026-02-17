@@ -90,7 +90,7 @@ const LetureYoutubeList = () => {
           <DataTable
             data={data}
             columns={columns}
-            pageSize={10}
+            pageSize={50}
             searchPlaceholder="Search Lecture Youtube..."
             addButton={{
               to: "/lecture-youtube/create",
@@ -104,7 +104,7 @@ const LetureYoutubeList = () => {
             <DataTable
               data={groupByPage(data, page)}
               columns={columns}
-              pageSize={10}
+              pageSize={50}
               searchPlaceholder={`Search ${page}...`}
               addButton={{
                 to: "/lecture-youtube/create",

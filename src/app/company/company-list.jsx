@@ -100,7 +100,7 @@ const CompanyList = () => {
       <DataTable
         data={data?.data || []}
         columns={columns}
-        pageSize={10}
+        pageSize={50}
         searchPlaceholder="Search companies..."
         addButton={{
           onClick: handleCreate,

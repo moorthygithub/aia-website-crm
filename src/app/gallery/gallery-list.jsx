@@ -134,7 +134,7 @@ const GalleryList = () => {
       <DataTable
         data={data?.data || []}
         columns={columns}
-        pageSize={10}
+        pageSize={20}
         searchPlaceholder="Search gallery..."
         extraButton={<GalleryCreate />}
       />
