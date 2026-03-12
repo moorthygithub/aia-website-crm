@@ -274,13 +274,17 @@ const StudentForm = () => {
       if (!data.student_office_image_alt)
         err.student_office_image_alt = "Office Image alt is required";
     }
-    if (data.student_have_certificate === "Yes") {
+    // if (data.student_have_certificate === "Yes") {
+    //   if (!data.student_linkedin_link)
+    //     err.student_linkedin_link = "LinkedIn link is required";
+    //   if (!preview.student_certificate_image && !data.student_certificate_image)
+    //     err.student_certificate_image = "Certificate image is required";
+    //   if (!data.student_certificate_image_alt)
+    //     err.student_certificate_image_alt = "Certificate image alt is required";
+    // }
+    if (data.student_have_story === "Yes") {
       if (!data.student_linkedin_link)
         err.student_linkedin_link = "LinkedIn link is required";
-      if (!preview.student_certificate_image && !data.student_certificate_image)
-        err.student_certificate_image = "Certificate image is required";
-      if (!data.student_certificate_image_alt)
-        err.student_certificate_image_alt = "Certificate image alt is required";
     }
 
     if (data.student_have_youtube === "Yes") {
@@ -997,8 +1001,28 @@ const StudentForm = () => {
               </>
             )}
 
-            {(data?.student_have_certificate === "Yes" ||
-              data.student_have_story === "Yes") && (
+            {data?.student_have_certificate === "Yes" && (
+              <div className="col-span-2">
+                <label className="text-sm font-medium">LinkedIn Link</label>
+                <Textarea
+                  placeholder="Enter LinkedIn link"
+                  value={data.student_linkedin_link}
+                  onChange={(e) =>
+                    setData({
+                      ...data,
+                      student_linkedin_link: e.target.value,
+                    })
+                  }
+                  rows={4}
+                />
+                {errors.student_linkedin_link && (
+                  <p className="text-xs text-red-500 mt-1">
+                    {errors.student_linkedin_link}
+                  </p>
+                )}
+              </div>
+            )}
+            {data.student_have_story === "Yes" && (
               <div className="col-span-2">
                 <label className="text-sm font-medium">LinkedIn Link *</label>
                 <Textarea
@@ -1025,7 +1049,7 @@ const StudentForm = () => {
                   <ImageUpload
                     id="student_certificate_image"
                     label="Certificate Image"
-                    required
+                    // required
                     selectedFile={data.student_certificate_image}
                     previewImage={preview.student_certificate_image}
                     onFileChange={(e) =>
@@ -1047,7 +1071,7 @@ const StudentForm = () => {
                 </div>
                 <div className="col-span-2">
                   <label className="text-sm font-medium">
-                    Certificate Image Alt *
+                    Certificate Image Alt
                   </label>
                   <Textarea
                     placeholder="Describe the certificate image"
@@ -1060,11 +1084,11 @@ const StudentForm = () => {
                     }
                     rows={4}
                   />
-                  {errors.student_certificate_image_alt && (
+                  {/* {errors.student_certificate_image_alt && (
                     <p className="text-xs text-red-500 mt-1">
                       {errors.student_certificate_image_alt}
                     </p>
-                  )}
+                  )} */}
                 </div>
                 <div className="col-span-2">
                   <ImageUpload
