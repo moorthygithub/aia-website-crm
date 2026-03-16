@@ -8,10 +8,23 @@ import { motion } from "framer-motion";
 import { Calendar, Mail, Search } from "lucide-react";
 import moment from "moment";
 import { useMemo, useState } from "react";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 const NewsLetter = () => {
   const [searchQuery, setSearchQuery] = useState("");
-
+  const [openDownload, setOpenDownload] = useState(false);
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
   const { data, isLoading, isError, refetch } = useGetApiMutation({
     url: NEWSLETTER_API.list,
     queryKey: ["newsletter-list"],
@@ -22,7 +35,7 @@ const NewsLetter = () => {
     if (!searchQuery.trim()) return newsletters;
     const query = searchQuery.toLowerCase();
     return newsletters.filter((item) =>
-      item.newsletter_email.toLowerCase().includes(query)
+      item.newsletter_email.toLowerCase().includes(query),
     );
   }, [searchQuery, newsletters]);
 
@@ -44,6 +57,59 @@ const NewsLetter = () => {
       y: 0,
       transition: { duration: 0.4, ease: "easeOut" },
     },
+  };
+  const handleDownloadExcel = async () => {
+    if (!fromDate || !toDate) {
+      toast.error("Please select From Date and To Date");
+      return;
+    }
+
+    if (moment(fromDate).isAfter(toDate)) {
+      toast.error("From date cannot be greater than To date");
+      return;
+    }
+
+    const filtered = newsletters
+      .filter((item) => {
+        const created = moment(item.newsletter_created);
+        return created.isBetween(fromDate, toDate, null, "[]");
+      })
+      .sort(
+        (a, b) =>
+          moment(a.newsletter_created).valueOf() -
+          moment(b.newsletter_created).valueOf(),
+      );
+
+    if (filtered.length === 0) {
+      toast.error("No data found for selected date range");
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Newsletters");
+
+    worksheet.columns = [
+      { header: "Email", key: "email", width: 35 },
+      { header: "Created Date", key: "date", width: 20 },
+    ];
+
+    filtered.forEach((item) => {
+      worksheet.addRow({
+        email: item.newsletter_email,
+        date: moment(item.newsletter_created).format("DD-MM-YYYY"),
+      });
+    });
+
+    worksheet.getRow(1).font = { bold: true };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), "newsletter-list.xlsx");
+
+    toast.success("Excel downloaded successfully");
+
+    setFromDate("");
+    setToDate("");
+    setOpenDownload(false);
   };
   if (isError) return <ApiErrorPage onRetry={refetch} />;
 
@@ -68,25 +134,68 @@ const NewsLetter = () => {
                   Manage and view all newsletter subscribers
                 </p>
               </div>
+              <div className="flex gap-4">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: 0.05 }}
+                  className="w-full sm:w-80"
+                >
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      type="text"
+                      placeholder="Search by email"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="h-10 pl-10  pr-3 text-sm bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </motion.div>
+                <Dialog open={openDownload} onOpenChange={setOpenDownload}>
+                  <DialogTrigger asChild>
+                    <Button>Download</Button>
+                  </DialogTrigger>
 
-              {/* Right: Search */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.05 }}
-                className="w-full sm:w-80"
-              >
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="text"
-                    placeholder="Search by email"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-10 pl-10  pr-3 text-sm bg-white border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </motion.div>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Download Newsletters</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-3">
+                      <div>
+                        <label className="text-sm text-gray-600">
+                          From Date
+                        </label>
+                        <Input
+                          type="date"
+                          value={fromDate}
+                          onChange={(e) => setFromDate(e.target.value)}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm text-gray-600">To Date</label>
+                        <Input
+                          type="date"
+                          value={toDate}
+                          onChange={(e) => setToDate(e.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <DialogFooter>
+                      <Button
+                        onClick={handleDownloadExcel}
+                        disabled={!fromDate || !toDate}
+                      >
+                        {" "}
+                        Download Excel
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
           </motion.div>
 
@@ -137,9 +246,13 @@ const NewsLetter = () => {
                     {/* Email */}
                     <div className="flex items-start gap-2">
                       <Mail className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
-                      <p className="text-sm font-medium text-gray-900 break-all">
+
+                      <a
+                        href={`mailto:${item.newsletter_email}`}
+                        className="text-sm font-medium text-gray-900 break-all hover:underline"
+                      >
                         {item.newsletter_email}
-                      </p>
+                      </a>
                     </div>
                   </motion.div>
                 ))}
